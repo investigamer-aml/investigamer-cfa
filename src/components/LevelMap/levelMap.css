@@ -1,0 +1,12 @@
+/* src/components/LevelMap/levelMap.css */
+
+.level-map {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: center;
+    align-items: center;
+    position: relative; /* Necessary for positioning any absolute elements */
+}
+
+/* For a more complex path, you might need to adjust each level's position individually or use a different layout strategy */
+
