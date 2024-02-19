@@ -15,6 +15,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask('INVESTIGAMER')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://data_admin:investigamer@localhost/ig_data_admin'
 app.config['SECRET_KEY'] = '78f78214cd0360e847034d3bda9d117f'
+app.config['SQLALCHEMY_ECHO'] = True
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -60,6 +61,7 @@ class UseCases(db.Model):
     final_decision = db.Column(db.String, nullable=False)
     risk_factor_matrix_id = db.Column(db.Integer, db.ForeignKey('risk_factor_matrix.id'), nullable=True)
     lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
+    questions = db.relationship('Questions', backref='use_cases', lazy=True)
 
 class RiskFactorMatrix(BaseModel):
     id: conint(gt=0)
@@ -76,13 +78,13 @@ class UserAnswer(BaseModel):
 
 class Questions(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    use_case_id = db.Column(db.Integer, db.ForeignKey('use_case.id'), nullable=False)
+    use_case_id = db.Column(db.Integer, db.ForeignKey('use_cases.id'), nullable=False)
     text = db.Column(db.String, nullable=False)
-    options = db.relationship('Option', backref='question', lazy=True)
+    options = db.relationship('Options', backref='questions', lazy=True)
 
 class Options(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    question_id = db.Column(db.Integer, db.ForeignKey('question.id'), nullable=False)
+    question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     text = db.Column(db.String, nullable=False)
     is_correct = db.Column(db.Boolean, default=False, nullable=False)
 
@@ -149,13 +151,6 @@ def profile():
     return render_template('profile.html', user=current_user)
 
 @app.route('/')
-# def home():
-#     first_use_case = UseCases.query.first()  # Assuming UseCase is an ORM model
-#     if first_use_case:
-#         # Render your index page with the first use case details
-#         return render_template('index.html', use_case=first_use_case)
-#     else:
-#         return "No use cases found", 404
 def home():
     return render_template('index.html')
 

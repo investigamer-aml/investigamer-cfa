@@ -21,11 +21,14 @@
 
             <!-- Dynamically load the multiple choice questions here -->
             <form action="/submit-answer" method="post">
-                {% for option in use_case.options %}
-                    <label>
-                        <input type="radio" name="answer" value="{{ option }}">
-                        {{ option.text }}
-                    </label><br>
+                {% for question in use_case.questions %}
+                    <h3>{{ question.text }}</h3>
+                    {% for option in question.options %}
+                        <label>
+                            <input type="radio" name="question_{{ question.id }}" value="{{ option.id }}">
+                            {{ option.text }}
+                        </label><br>
+                    {% endfor %}
                 {% endfor %}
 
                 <button type="submit" class="button">Submit Answer</button>
