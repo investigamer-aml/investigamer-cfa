@@ -1,0 +1,8 @@
+
+Flask-SQLAlchemy
+psycopg2
+pydantic[email]
+fastapi
+Flask-Login
+pytest
+flask_testing

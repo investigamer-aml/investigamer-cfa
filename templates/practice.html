@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Practice</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/logout" style="float:right;">Logout</a>
+        </nav>
+    </header>
+    <main>
+        <div class="use-case-container">
+            <!-- Dynamically load the use case here -->
+            <h2>{{ use_case.title }}</h2>
+            <p>{{ use_case.description|safe }}</p>
+
+            <!-- Dynamically load the multiple choice questions here -->
+            <form action="/submit-answer" method="post">
+                {% for option in use_case.options %}
+                    <label>
+                        <input type="radio" name="answer" value="{{ option }}">
+                        {{ option.text }}
+                    </label><br>
+                {% endfor %}
+
+                <button type="submit" class="button">Submit Answer</button>
+            </form>
+        </div>
+    </main>
+    <footer>
+        <p>Investigamer © 2024</p>
+    </footer>
+</body>
+</html>
