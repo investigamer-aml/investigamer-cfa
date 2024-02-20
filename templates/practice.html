@@ -15,22 +15,28 @@
     </header>
     <main>
         <div class="use-case-container">
-            <!-- Dynamically load the use case here -->
-            <h2>{{ use_case.title }}</h2>
-            <p>{{ use_case.description|safe }}</p>
+            <p id="use-case-description">{{ use_case.description|safe }}</p>
 
-            <!-- Dynamically load the multiple choice questions here -->
-            <form action="/submit-answer" method="post">
-                {% for question in use_case.questions %}
-                    <h3>{{ question.text }}</h3>
-                    {% for option in question.options %}
+            <!-- The form is structured to keep the submit button static -->
+            <form id="questions-form" action="/submit-answer" method="post">
+                <input type="hidden" name="use_case_id" value="{{ use_case.id }}">
+
+                <!-- Dynamic content will be loaded into this div -->
+                <div id="questions-container">
+                    {% for question in use_case.questions %}
+                    <fieldset>
+                        <legend>{{ question.text }}</legend>
+                        {% for option in question.options %}
                         <label>
-                            <input type="radio" name="question_{{ question.id }}" value="{{ option.id }}">
+                            <input type="radio" name="answer[{{ question.id }}]" value="{{ option.id }}">
                             {{ option.text }}
                         </label><br>
+                        {% endfor %}
+                    </fieldset>
                     {% endfor %}
-                {% endfor %}
+                </div>
 
+                <!-- Submit button remains static outside the dynamic content area -->
                 <button type="submit" class="button">Submit Answer</button>
             </form>
         </div>
@@ -38,5 +44,7 @@
     <footer>
         <p>Investigamer © 2024</p>
     </footer>
+
+    <script src="{{ url_for('static', filename='cfa.js') }}"></script>
 </body>
 </html>
