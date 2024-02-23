@@ -18,7 +18,7 @@
             <p id="use-case-description">{{ use_case.description|safe }}</p>
 
             <!-- The form is structured to keep the submit button static -->
-            <form id="questions-form" action="/submit-answer" method="post">
+            <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
                 <input type="hidden" name="use_case_id" value="{{ use_case.id }}">
 
                 <!-- Dynamic content will be loaded into this div -->

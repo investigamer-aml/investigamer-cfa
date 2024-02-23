@@ -5,6 +5,8 @@ from pydantic import BaseModel, EmailStr, field_validator, constr, conint
 from flask import Flask, request, session, jsonify, render_template, redirect, url_for, jsonify
 from flask_login import login_user, current_user, login_required, logout_user, UserMixin, LoginManager
 from flask_sqlalchemy import SQLAlchemy
+from flask_debugtoolbar import DebugToolbarExtension
+
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
@@ -14,7 +16,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask('INVESTIGAMER')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://data_admin:investigamer@localhost/ig_data_admin'
 app.config['SECRET_KEY'] = '78f78214cd0360e847034d3bda9d117f'
-# app.config['SQLALCHEMY_ECHO'] = True
+app.config['SQLALCHEMY_ECHO'] = True
+app.debug = True
+toolbar = DebugToolbarExtension(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -250,22 +254,6 @@ def prepare_first_question_data(question):
             {"id": option.id, "text": option.text} for option in question.options
         ]
     }
-
-def render_question(question):
-    # Render the question page with options
-    # This will include question text and multiple-choice options
-    pass
-
-def evaluate_answer(user_id: int, question_id: int, given_answer: str) -> bool:
-    """
-    Evaluates a given answer against the correct answer in the database.
-    Returns True if the answer is correct, False otherwise.
-    """
-    # Placeholder for actual database query to get the correct answer
-    correct_answer = "A"
-    is_correct = given_answer == correct_answer
-    # Here we would also update the user's progress in the database
-    return is_correct
 
 def record_attempt(user_id, question_id, user_answers, correct):
     attempt = UserAnswers(user_id=user_id, use_case_id=question_id, option_id=','.join(user_answers), is_correct=correct)
