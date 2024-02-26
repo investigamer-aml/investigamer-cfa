@@ -8,6 +8,9 @@ class DifficultyLevel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     level = db.Column(db.String(50), unique=True, nullable=False)
 
+    def __repr__(self):
+        return f'<DifficultyLevel {self.level}>'
+
 class Users(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -29,7 +32,7 @@ class Users(UserMixin, db.Model):
 #     name: constr(min_length=1)
 #     description: Optional[str] = None
 
-class Lesson(db.Model):
+class Lessons(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
 

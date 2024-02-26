@@ -2,7 +2,7 @@ from typing import Optional, Dict, Any
 from flask import current_app as app
 from flask import Flask, request, session, jsonify, render_template, redirect, url_for, jsonify
 from flask_login import login_user, current_user, login_required, logout_user, UserMixin, LoginManager
-from .models import Users, UseCases, Questions, UserAnswers, Options
+from .models import Users, UseCases, Questions, UserAnswers, Options, Lessons, DifficultyLevel
 from app import db
 
 login_manager = LoginManager()
@@ -159,8 +159,19 @@ def new_use_case():
     if request.method == 'POST':
         type = request.form['type']
         description = request.form['description']
+        lesson_id = request.form.get('lesson_id')
+        difficulty = request.form.get('difficulty')
+        final_decision = request.form.get('final_decision')
+
         # Handle other fields similarly
-        use_case = UseCases(type=type, description=description, created_by_user=current_user.id)
+        use_case = UseCases(
+            type=type,
+            description=description,
+            lesson_id=lesson_id,
+            difficulty=difficulty,
+            final_decision=final_decision,
+            created_by_user=current_user.id
+        )
         db.session.add(use_case)
         db.session.flush()  # Flush to assign an ID to the use case without committing
 
@@ -180,7 +191,11 @@ def new_use_case():
         db.session.commit()
         return redirect(url_for('admin'))
 
-    return render_template('create_use_case.html')
+    # Assuming you have lists of lessons and difficulty levels to populate the form selections
+    lessons = Lessons.query.all()
+    difficulty_levels = DifficultyLevel.query.all()
+    print(difficulty_levels)
+    return render_template('create_use_case.html', difficulty_levels=difficulty_levels, lessons=lessons)
 
 def get_first_question_of_use_case(use_case_id):
     return Questions.query.filter_by(use_case_id=use_case_id).order_by(Questions.id).first()
