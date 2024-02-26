@@ -1,15 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
-<body class="bg-gray-50">
-    <div class="container mx-auto px-4">
+{% extends "base.html" %}
+
+{% block title %}Admin{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4">
         <h1 class="text-xl font-semibold text-gray-800 my-5">Admin Dashboard</h1>
-        <a href="/use-case/new" class="mb-5 inline-block bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">Create New Use Case</a>
         <div class="grid grid-cols-1 gap-4">
             {% for use_case in use_cases %}
             <div class="p-5 bg-white rounded shadow">
@@ -18,7 +13,12 @@
                 <!-- Add more details as needed -->
             </div>
             {% endfor %}
-        </div>
-    </div>
-</body>
-</html>
+            <div class="text-right"> <!-- Added div wrapper for alignment -->
+                <a href="/use-case/new" class="inline-flex items-center bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Create New Use Case
+                </a>
+            </div>
+{% endblock %}

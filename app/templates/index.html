@@ -1,48 +1,9 @@
-<!DOCTYPE html>
-<html lang="en" class="h-full bg-gray-50">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Welcome!</title>
-        <!-- Link to Tailwind CSS -->
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-        <style>
-            /* Custom styles for enhancing visuals */
-            body::before {
-                content: '';
-                position: absolute;
-                top: 0; right: 0; bottom: 0; left: 0;
-                background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
-                clip-path: polygon(0 0, 100% 0, 100% 80vh, 0 100%);
-                z-index: -1;
-            }
-        </style>
-    </head>
-    <body class="flex flex-col justify-between min-h-screen relative">
-        <header class="text-gray-100 body-font shadow w-full z-10">
-        <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
-            <a class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
-                <span class="ml-3 text-xl text-white font-bold">Investigamer</span>
-            </a>
-            <nav class="md:ml-auto flex flex-wrap items-center text-base justify-center">
-                {% if current_user.is_authenticated %}
-                <a href="/practice" class="mr-5 hover:text-gray-300">Practice</a>
-                <a href="/lessons" class="mr-5 hover:text-gray-300">Lessons</a>
-                {% if current_user.is_admin %}
-                <a href="/admin" class="mr-5 hover:text-gray-300">Admin</a> <!-- Admin link -->
-                {% endif %}
-                <!-- Removed Profile text link -->
-                <a href="/profile" class="hover:text-gray-300">
-                    <div class="ml-4 inline-flex items-center justify-center bg-blue-500 rounded-full h-10 w-10">
-                        <span class="text-xl text-white font-semibold">
-                            {{ current_user.username[0].upper() }}{{ current_user.username.split()[-1][0].upper() if ' ' in current_user.username else '' }}
-                        </span>
-                    </div>
-                </a>
-            {% endif %}
-            </nav>
-        </div>
-    </header>
+{% extends "base.html" %}
+
+{% block title %}Investigamer{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4">
     <main class="container mx-auto flex px-5 py-24 md:flex-row flex-col items-center flex-grow z-10">
         <div class="lg:flex-grow md:w-1/2 lg:pr-24 md:pr-16 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
             <h1 class="title-font sm:text-6xl text-5xl mb-4 font-medium text-white">Skilling up your <span class="text-purple-800">AML</span> knowledge has never been more <span class="text-purple-800">fun</span>!
@@ -64,20 +25,6 @@
             <!-- Consider adding a relevant, high-quality image that reflects the theme of your platform -->
         </div>
     </main>
-    <footer class="bg-white text-right py-4 w-full absolute bottom-0">
-        <!-- <div class="container mx-auto flex items-center justify-center sm:flex-row flex-col py-4"> -->
-        <div class="container items-right justify-center mx-auto sm:py-2  flex">
-            <p class="text-sm text-gray-500 sm:ml-4 sm:pl-4 sm:border-l-2 sm:border-gray-200 sm:py-2 sm:mt-0 mt-4">© 2024 Investigamer —
-                <a href="https://twitter.com/knyttneve" class="text-gray-600 ml-1" rel="noopener noreferrer" target="_blank">@investigamer_aml</a>
-            </p>
-            <span class="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
-                <a href="#" class="text-gray-500">
-                    <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
-                        <!-- SVG icons for social media etc. -->
-                    </svg>
-                </a>
-            </span>
-        </div>
-    </footer>
-</body>
-</html>
+
+</div>
+{% endblock %}
