@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Use Case</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4">
+        <h1 class="text-xl font-semibold text-gray-800 my-5">Create New Use Case</h1>
+        <form action="/use-case/new" method="POST" class="bg-white p-5 rounded shadow">
+            <div class="mb-4">
+                <label for="type" class="block text-sm font-medium text-gray-700">Type:</label>
+                <input type="text" id="type" name="type" required class="mt-1 p-2 w-full border rounded-md">
+            </div>
+            <div class="mb-4">
+                <label for="description" class="block text-sm font-medium text-gray-700">Description:</label>
+                <textarea id="description" name="description" required class="mt-1 p-2 w-full border rounded-md"></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="question" class="block text-sm font-medium text-gray-700">Question:</label>
+                <input type="text" id="question" name="question" required class="mt-1 p-2 w-full border rounded-md">
+            </div>
+            {% for i in range(1, 5) %}
+            <div class="mb-4 flex items-center">
+                <label for="option_{{i}}" class="block text-sm font-medium text-gray-700">Option {{i}}:</label>
+                <input type="text" id="option_{{i}}" name="option_{{i}}" required class="ml-2 p-2 border rounded-md">
+                <input type="radio" name="correct_option" value="{{i}}" class="ml-4"> Correct
+            </div>
+            {% endfor %}
+            <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">Submit</button>
+        </form>
+    </div>
+</body>
+</html>

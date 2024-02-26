@@ -14,6 +14,7 @@ def register():
     username = request.form.get('username')
     email = request.form.get('email')
     password = request.form.get('password')
+    is_admin = 'is_admin' in request.form
 
     # Check if user already exists
     user_exists = Users.query.filter((Users.email == email) | (Users.username == username)).first()
@@ -21,8 +22,9 @@ def register():
         return jsonify({'error': 'User already exists'}), 400
 
     # Create new user
-    new_user = Users(username=username, email=email)
+    new_user = Users(username=username, email=email, is_admin=is_admin)
     new_user.set_password(password)  # Hash password
+    new_user.is_admin = is_admin  # Setting the is_admin flag based on checkbox
     db.session.add(new_user)
     db.session.commit()
 
@@ -39,11 +41,12 @@ def login():
     if current_user.is_authenticated:
         return redirect(url_for('home'))  # Redirect to the homepage
 
-    username = request.form.get('username')
+    login_input = request.form.get('login_input')  # Assuming you change the form to have 'login_input' instead of 'username'
     password = request.form.get('password')
 
-    # Authenticate user
-    user = Users.query.filter_by(username=username).first()
+    # Attempt to authenticate first by username, then by email
+    user = Users.query.filter((Users.username == login_input) | (Users.email == login_input)).first()
+
     if user and user.check_password(password):
         login_user(user)
         return redirect(url_for('home'))  # Redirect to the homepage
@@ -143,9 +146,41 @@ def submit_answer():
     else:
         return jsonify({'message': 'No more use cases'}), 200
 
+@app.route('/admin')
+@login_required
+def admin():
+    # Assuming 'current_user' is the logged-in user
+    use_cases = UseCases.query.filter_by(created_by_user=current_user.id).all()
+    return render_template('admin.html', use_cases=use_cases)
 
-    # return jsonify({'message': 'Answers submitted successfully', 'results': results}), 200
+@app.route('/use-case/new', methods=['GET', 'POST'])
+@login_required
+def new_use_case():
+    if request.method == 'POST':
+        type = request.form['type']
+        description = request.form['description']
+        # Handle other fields similarly
+        use_case = UseCases(type=type, description=description, created_by_user=current_user.id)
+        db.session.add(use_case)
+        db.session.flush()  # Flush to assign an ID to the use case without committing
 
+                # Now handle the question and answers
+        question_text = request.form.get('question')
+        question = Questions(text=question_text, use_case_id=use_case.id)
+        db.session.add(question)
+        db.session.flush()  # Flush to assign an ID to the question
+
+        # Handle options creation
+        for i in range(1, 5):  # Assuming 4 options based on the form
+            option_text = request.form.get(f'option_{i}')
+            is_correct = (str(i) == request.form.get('correct_option'))
+            option = Options(text=option_text, question_id=question.id, is_correct=is_correct)
+            db.session.add(option)
+
+        db.session.commit()
+        return redirect(url_for('admin'))
+
+    return render_template('create_use_case.html')
 
 def get_first_question_of_use_case(use_case_id):
     return Questions.query.filter_by(use_case_id=use_case_id).order_by(Questions.id).first()

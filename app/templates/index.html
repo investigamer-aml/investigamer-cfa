@@ -28,6 +28,9 @@
                 {% if current_user.is_authenticated %}
                 <a href="/practice" class="mr-5 hover:text-gray-300">Practice</a>
                 <a href="/lessons" class="mr-5 hover:text-gray-300">Lessons</a>
+                {% if current_user.is_admin %}
+                <a href="/admin" class="mr-5 hover:text-gray-300">Admin</a> <!-- Admin link -->
+                {% endif %}
                 <!-- Removed Profile text link -->
                 <a href="/profile" class="hover:text-gray-300">
                     <div class="ml-4 inline-flex items-center justify-center bg-blue-500 rounded-full h-10 w-10">

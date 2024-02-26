@@ -4,10 +4,9 @@ from enum import Enum
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
-class DifficultyLevel(str, Enum):
-    easy = "Easy"
-    medium = "Medium"
-    hard = "Hard"
+class DifficultyLevel(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    level = db.Column(db.String(50), unique=True, nullable=False)
 
 class Users(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -30,9 +29,9 @@ class Users(UserMixin, db.Model):
 #     name: constr(min_length=1)
 #     description: Optional[str] = None
 
-# class Lesson(BaseModel):
-#     id: conint(gt=0)
-#     title: constr(min_length=1)
+class Lesson(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False)
 
 class UseCases(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -45,12 +44,16 @@ class UseCases(db.Model):
     risk_factor_matrix_id = db.Column(db.Integer, db.ForeignKey('risk_factor_matrix.id'), nullable=True)
     lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
     questions = db.relationship('Questions', backref='use_cases', lazy=True)
+    created_by_user = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)  # Adjust as needed
 
-# class RiskFactorMatrix(BaseModel):
-#     id: conint(gt=0)
-#     factor: constr(min_length=1)
-#     score: conint(ge=0, le=100)  # Score is between 0 and 100
-#     use_case_id: conint(gt=0)
+    def __repr__(self):
+        return '<UseCase %r>' % self.title
+
+class RiskFactorMatrix(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    factor =  db.Column(db.String, nullable=False)
+    score = db.Column(db.Float, nullable = False)
+    use_case_id = db.Column(db.Integer, db.ForeignKey('use_cases.id'), nullable=False)
 
 class UserAnswers(db.Model):
     __tablename__ = 'user_answers'
