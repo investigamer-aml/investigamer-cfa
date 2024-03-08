@@ -1,8 +1,10 @@
 
 Flask-SQLAlchemy
 psycopg2
+psycopg2-binary
 pydantic[email]
 fastapi
 Flask-Login
 pytest
 flask_testing
+alembic

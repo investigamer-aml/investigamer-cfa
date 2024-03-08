@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Welcome!{% endblock %}</title>
+    <link rel="icon" type="image/svg+xml" href="images/browser_icon.svg">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: linear-gradient(to right, #667eea 0%, #764ba2 100%);
+            clip-path: polygon(0 0, 100% 0, 100% 80vh, 0 100%);
+            z-index: -1;
+        }
+        .sticky-footer-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        main {
+            flex: 1;
+        }
+    </style>
+</head>
+<body class="sticky-footer-wrapper">
+    <header class="text-gray-100 body-font shadow w-full z-10" style="background: linear-gradient(to right, #667eea 0%, #764ba2 100%);">
+        <div class="container mx-auto flex flex-wrap p-5 flex-col md:flex-row items-center">
+            <a href="/" class="flex title-font font-medium items-center text-gray-900 mb-4 md:mb-0">
+                <span class="ml-3 text-xl text-white font-bold">Investigamer</span>
+            </a>
+            <nav class="md:ml-auto flex flex-wrap items-center text-base justify-center">
+                {% if current_user.is_authenticated %}
+                <a href="/practice" class="mr-5 hover:text-gray-300">Practice</a>
+                <a href="/lessons" class="mr-5 hover:text-gray-300">Lessons</a>
+                {% if current_user.is_admin %}
+                <a href="/admin" class="mr-5 hover:text-gray-300">Admin</a> <!-- Admin link -->
+                {% endif %}
+                <!-- Removed Profile text link -->
+                <a href="/profile" class="hover:text-gray-300">
+                    <div class="ml-4 inline-flex items-center justify-center bg-blue-500 rounded-full h-10 w-10">
+                        <span class="text-xl text-white font-semibold">
+                            {{ current_user.username[0].upper() }}{{ current_user.username.split()[-1][0].upper() if ' ' in current_user.username else '' }}
+                        </span>
+                    </div>
+                </a>
+            {% endif %}
+            </nav>
+        </div>
+    </header>
+    <main>
+        {% block content %}
+        <!-- Page-specific content will go here -->
+        {% endblock %}
+    </main>
+    <footer class="bg-white text-right py-4 w-full absolute bottom-0">
+        <!-- <div class="container mx-auto flex items-center justify-center sm:flex-row flex-col py-4"> -->
+        <div class="container items-right justify-center mx-auto sm:py-2  flex">
+            <p class="text-sm text-gray-500 sm:ml-4 sm:pl-4 sm:border-l-2 sm:border-gray-200 sm:py-2 sm:mt-0 mt-4">© 2024 Investigamer —
+                <a href="https://twitter.com/knyttneve" class="text-gray-600 ml-1" rel="noopener noreferrer" target="_blank">@investigamer_aml</a>
+            </p>
+            <span class="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
+                <a href="#" class="text-gray-500">
+                    <svg fill="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-5 h-5" viewBox="0 0 24 24">
+                        <!-- SVG icons for social media etc. -->
+                    </svg>
+                </a>
+            </span>
+        </div>
+    </footer>
+</body>
+</html>
