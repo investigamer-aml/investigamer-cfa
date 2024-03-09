@@ -45,7 +45,7 @@ class UseCases(db.Model):
     correct_answer = db.Column(db.String, nullable=False)
     final_decision = db.Column(db.String, nullable=False)
     risk_factor_matrix_id = db.Column(db.Integer, db.ForeignKey('risk_factor_matrix.id'), nullable=True)
-    lesson_id = db.Column(db.Integer, db.ForeignKey('lesson.id'), nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'), nullable=False)
     questions = db.relationship('Questions', backref='use_cases', lazy=True)
     created_by_user = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)  # Adjust as needed
 

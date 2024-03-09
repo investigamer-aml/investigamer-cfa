@@ -42,11 +42,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function loadNextUseCase(useCase) {
       console.log('Loading next use case:', useCase);
       useCaseContainer.innerHTML = `
-        <p>${useCase.description}</p>
-        <form>
+        <p id="use-case-description" class="text-lg mb-4">${useCase.description}</p>
+        <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
           <input type="hidden" name="use_case_id" value="${useCase.useCaseId}">
-          ${generateQuestionHTML(useCase.firstQuestion)}
-          <button type="submit" class="button">Submit Answer</button>
+          <div id="questions-container">
+            ${generateQuestionHTML(useCase.firstQuestion)}
+          </div>
+          <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+            Submit Answer
+          </button>
         </form>
       `;
     }
@@ -54,13 +58,13 @@ document.addEventListener('DOMContentLoaded', function() {
     function generateQuestionHTML(question) {
       if (!question) return '';
       return `
-        <div>
-          <h3>${question.text}</h3>
+        <div class="mb-6">
+          <p class="font-bold mb-2">${question.text}</p>
           ${question.options.map(option => `
-            <label>
-              <input type="radio" name="answer[${question.questionId}]" value="${option.id}">
+            <label class="block mb-2">
+              <input type="radio" name="answer[${question.questionId}]" value="${option.id}" class="mr-2">
               ${option.text}
-            </label><br>
+            </label>
           `).join('')}
         </div>
       `;

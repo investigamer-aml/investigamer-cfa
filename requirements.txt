@@ -8,3 +8,4 @@ Flask-Login
 pytest
 flask_testing
 alembic
+markdown

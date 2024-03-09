@@ -4,6 +4,7 @@ from flask import Flask, request, session, jsonify, render_template, redirect, u
 from flask_login import login_user, current_user, login_required, logout_user, UserMixin, LoginManager
 from .models import Users, UseCases, Questions, UserAnswers, Options, Lessons, DifficultyLevel
 from app import db
+import markdown
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -81,6 +82,7 @@ def home():
 @app.route('/practice')
 def start_lesson():
     use_case = UseCases.query.order_by(UseCases.id).filter_by(lesson_id=1).first()
+    use_case.description = markdown.markdown(use_case.description)
     if use_case:
         use_case_data = {
             'id': use_case.id,
