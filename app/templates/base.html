@@ -16,12 +16,13 @@
             z-index: -1;
         }
         .sticky-footer-wrapper {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
         }
+
         main {
-            flex: 1;
+            flex-grow: 1;
         }
     </style>
 </head>
@@ -50,12 +51,12 @@
             </nav>
         </div>
     </header>
-    <main>
+    <main class="flex-grow">
         {% block content %}
         <!-- Page-specific content will go here -->
         {% endblock %}
     </main>
-    <footer class="bg-white text-right py-4 w-full absolute bottom-0">
+    <footer class="bg-white text-right py-4 w-full">
         <!-- <div class="container mx-auto flex items-center justify-center sm:flex-row flex-col py-4"> -->
         <div class="container items-right justify-center mx-auto sm:py-2  flex">
             <p class="text-sm text-gray-500 sm:ml-4 sm:pl-4 sm:border-l-2 sm:border-gray-200 sm:py-2 sm:mt-0 mt-4">© 2024 Investigamer —

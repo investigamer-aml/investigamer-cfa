@@ -80,10 +80,25 @@ def home():
 # @app.route('/practice/<int:lesson_id>')
 @app.route('/practice')
 def start_lesson():
-    # Retrieve the first question for the lesson_id
-    use_case = UseCases.query.order_by(UseCases.id).filter_by(lesson_id=1).first() #fix it to Easy for now
+    use_case = UseCases.query.order_by(UseCases.id).filter_by(lesson_id=1).first()
     if use_case:
-        return render_template('practice.html', use_case=use_case)
+        use_case_data = {
+            'id': use_case.id,
+            'description': use_case.description,
+            'questions': [
+                {
+                    'id': question.id,
+                    'text': question.text,
+                    'options': [
+                        {
+                            'id': option.id,
+                            'text': option.text
+                        } for option in question.options
+                    ]
+                } for question in use_case.questions
+            ]
+        }
+        return render_template('practice.html', use_case=use_case_data)
     else:
         return "Lesson not found", 404
 
