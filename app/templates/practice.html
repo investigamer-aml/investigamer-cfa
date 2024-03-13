@@ -7,7 +7,7 @@
     <div class="bg-white shadow-md rounded-lg p-6">
         <h2 class="text-2xl font-bold mb-4">Practice</h2>
         <div class="use-case-container">
-            <p id="use-case-description" class="text-lg mb-4">{{ use_case.description }}</p>
+            <p id="use-case-description" class="text-lg mb-4">{{ use_case.description|safe }}</p>
 
             <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
                 <input type="hidden" name="use_case_id" value="{{ use_case.id }}">

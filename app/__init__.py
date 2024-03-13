@@ -12,7 +12,7 @@ def create_app():
 
     db.init_app(app)
     login_manager.init_app(app)
-    toolbar = DebugToolbarExtension(app)
+    #toolbar = DebugToolbarExtension(app)
 
     with app.app_context():
         from . import routes  # Import routes
