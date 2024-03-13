@@ -210,6 +210,48 @@ def new_use_case():
     print(difficulty_levels)
     return render_template('create_use_case.html', difficulty_levels=difficulty_levels, lessons=lessons)
 
+@app.route('/use-case/<int:use_case_id>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_use_case(use_case_id):
+    use_case = UseCases.query.get_or_404(use_case_id)
+    if request.method == 'POST':
+        # Update the use case fields based on the form data
+        use_case.type = request.form['type']
+        use_case.description = request.form['description']
+        use_case.lesson_id = request.form.get('lesson_id')
+        use_case.difficulty = request.form.get('difficulty')
+        use_case.final_decision = request.form.get('final_decision')
+
+        # Handle question and options updates
+        question_text = request.form.get('question')
+        question = Questions.query.filter_by(use_case_id=use_case.id).first()
+        if question:
+            question.text = question_text
+        else:
+            question = Questions(text=question_text, use_case_id=use_case.id)
+            db.session.add(question)
+
+        # Delete existing options
+        Options.query.filter_by(question_id=question.id).delete()
+
+        # Create new options
+        for i in range(1, 5):
+            option_text = request.form.get(f'option_{i}')
+            is_correct = (str(i) == request.form.get('correct_option'))
+            option = Options(text=option_text, question_id=question.id, is_correct=is_correct)
+            db.session.add(option)
+
+        db.session.commit()
+        return redirect(url_for('admin'))
+
+    # Retrieve the existing question and options for the use case
+    question = Questions.query.filter_by(use_case_id=use_case.id).first()
+    options = Options.query.filter_by(question_id=question.id).all() if question else []
+
+    lessons = Lessons.query.all()
+    difficulty_levels = DifficultyLevel.query.all()
+    return render_template('create_use_case.html', use_case=use_case, question=question, options=options, lessons=lessons, difficulty_levels=difficulty_levels)
+
 def get_first_question_of_use_case(use_case_id):
     return Questions.query.filter_by(use_case_id=use_case_id).order_by(Questions.id).first()
 

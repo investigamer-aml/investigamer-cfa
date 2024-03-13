@@ -1,55 +1,64 @@
 {% extends "base.html" %}
 
-{% block title %}Create New Use Case{% endblock %}
+{% block title %}Investigamer - {% if use_case %}Edit{% else %}Create{% endif %} Use Case{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4">
-    <h1 class="text-xl font-semibold text-gray-800 my-5">Create New Use Case</h1>
-    <!-- Form content from create_use_case.html goes here -->
-    <form action="/use-case/new" method="POST" class="bg-white p-5 rounded shadow">
-        <div class="mb-4">
-            <label for="type" class="block text-sm font-medium text-gray-700">Type:</label>
-            <input type="text" id="type" name="type" required class="mt-1 p-2 w-full border rounded-md">
-        </div>
-        <div class="mb-4">
-            <label for="description" class="block text-sm font-medium text-gray-700">Description:</label>
-            <textarea id="description" name="description" required class="mt-1 p-2 w-full border rounded-md"></textarea>
-        </div>
-        <div class="mb-4">
-            <label for="lesson_id" class="block text-sm font-medium text-gray-700">Lesson:</label>
-            <select id="lesson_id" name="lesson_id" required class="mt-1 p-2 w-full border rounded-md">
-                {% for lesson in lessons %}
-                <option value="{{ lesson.id }}">{{ lesson.title }}</option>
-                {% endfor %}
-            </select>
-        </div>
+<div class="container mx-auto py-8">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-2xl font-bold mb-4">{% if use_case %}Edit{% else %}Create{% endif %} Use Case</h2>
+        <form method="POST" action="{% if use_case %}{{ url_for('edit_use_case', use_case_id=use_case.id) }}{% else %}{{ url_for('new_use_case') }}{% endif %}">
+            <!-- Use Case fields -->
+            <div class="mb-4">
+                <label for="type" class="block text-gray-700 font-bold mb-2">Type:</label>
+                <input type="text" id="type" name="type" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="{{ use_case.type if use_case else '' }}" required>
+            </div>
+            <div class="mb-4">
+                <label for="description" class="block text-gray-700 font-bold mb-2">Description:</label>
+                <textarea id="description" name="description" class="w-full px-3 py-2 border border-gray-300 rounded-md" rows="3" required>{{ use_case.description if use_case else '' }}</textarea>
+            </div>
+            <div class="mb-4">
+                <label for="lesson_id" class="block text-gray-700 font-bold mb-2">Lesson:</label>
+                <select id="lesson_id" name="lesson_id" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                    {% for lesson in lessons %}
+                    <option value="{{ lesson.id }}" {% if use_case and use_case.lesson_id == lesson.id %}selected{% endif %}>{{ lesson.title }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="difficulty" class="block text-gray-700 font-bold mb-2">Difficulty:</label>
+                <select id="difficulty" name="difficulty" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                    {% for difficulty_level in difficulty_levels %}
+                    <option value="{{ difficulty_level.level }}" {% if use_case and use_case.difficulty == difficulty_level.level %}selected{% endif %}>{{ difficulty_level.level }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="mb-4">
+                <label for="final_decision" class="block text-gray-700 font-bold mb-2">Final Decision:</label>
+                <input type="text" id="final_decision" name="final_decision" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="{{ use_case.final_decision if use_case else '' }}" required>
+            </div>
 
-        <!-- Difficulty Level Dropdown -->
-        <div class="mb-4">
-            <label for="difficulty" class="block text-sm font-medium text-gray-700">Difficulty Level:</label>
-            <select id="difficulty" name="difficulty" required class="mt-1 p-2 w-full border rounded-md">
-                {% for level in difficulty_levels %}
-                <option value="{{ level.id }}">{{ level.level }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="mb-4">
-            <label for="question" class="block text-sm font-medium text-gray-700">Question:</label>
-            <input type="text" id="question" name="question" required class="mt-1 p-2 w-full border rounded-md">
-        </div>
-        <!-- Final Decision Input -->
-        <div class="mb-4">
-            <label for="final_decision" class="block text-sm font-medium text-gray-700">Final Decision:</label>
-            <input type="text" id="final_decision" name="final_decision" required class="mt-1 p-2 w-full border rounded-md">
-        </div>
-        {% for i in range(1, 5) %}
-        <div class="mb-4 flex items-center">
-            <label for="option_{{i}}" class="block text-sm font-medium text-gray-700">Option {{i}}:</label>
-            <input type="text" id="option_{{i}}" name="option_{{i}}" required class="ml-2 p-2 border rounded-md">
-            <input type="radio" name="correct_option" value="{{i}}" class="ml-4"> Correct
-        </div>
-        {% endfor %}
-        <button type="submit" class="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">Submit</button>
-    </form>
+            <!-- Question and Options fields -->
+            <div class="mb-4">
+                <label for="question" class="block text-gray-700 font-bold mb-2">Question:</label>
+                <input type="text" id="question" name="question" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="{{ question.text if question else '' }}" required>
+            </div>
+            {% for i in range(1, 5) %}
+            <div class="mb-4">
+                <label for="option_{{ i }}" class="block text-gray-700 font-bold mb-2">Option {{ i }}:</label>
+                <input type="text" id="option_{{ i }}" name="option_{{ i }}" class="w-full px-3 py-2 border border-gray-300 rounded-md" value="{{ options[i-1].text if options and options[i-1] else '' }}" required>
+            </div>
+            {% endfor %}
+            <div class="mb-4">
+                <label for="correct_option" class="block text-gray-700 font-bold mb-2">Correct Option:</label>
+                <select id="correct_option" name="correct_option" class="w-full px-3 py-2 border border-gray-300 rounded-md" required>
+                    {% for i in range(1, 5) %}
+                    <option value="{{ i }}" {% if options and options[i-1].is_correct %}selected{% endif %}>Option {{ i }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">{% if use_case %}Update{% else %}Create{% endif %} Use Case</button>
+        </form>
+    </div>
 </div>
 {% endblock %}
