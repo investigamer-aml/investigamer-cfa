@@ -106,7 +106,6 @@ def start_lesson():
         return "Lesson not found", 404
 
 @app.route('/submit-answer', methods=['POST'])
-@app.route('/submit-answer', methods=['POST'])
 def submit_answer():
     data = request.get_json()
     app.logger.info(f"Received data: {data}")
