@@ -2,7 +2,7 @@ from app import db
 from flask_login import UserMixin
 from enum import Enum
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from datetime import datetime
 
 class DifficultyLevel(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -67,6 +67,7 @@ class UserAnswers(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey('questions.id'), nullable=False)
     option_id = db.Column(db.Integer, db.ForeignKey('options.id'), nullable=False)
     is_correct = db.Column(db.Boolean, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     user = db.relationship('Users', backref=db.backref('user_answers', lazy=True))
     use_case = db.relationship('UseCases', backref=db.backref('use_case_answers', lazy=True))

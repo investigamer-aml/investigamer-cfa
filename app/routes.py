@@ -5,6 +5,7 @@ from flask_login import login_user, current_user, login_required, logout_user, U
 from .models import Users, UseCases, Questions, UserAnswers, Options, Lessons, DifficultyLevel
 from app import db
 import markdown
+from datetime import datetime
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -105,11 +106,11 @@ def start_lesson():
         return "Lesson not found", 404
 
 @app.route('/submit-answer', methods=['POST'])
+@app.route('/submit-answer', methods=['POST'])
 def submit_answer():
     data = request.get_json()
     app.logger.info(f"Received data: {data}")
 
-    # Extract the use_case_id from the JSON payload
     use_case_id = data.get('use_case_id')
     answers_data = data.get('answers')
 
@@ -124,20 +125,17 @@ def submit_answer():
         if not question_id or not option_id:
             return jsonify({'error': 'Missing question ID or answer option ID'}), 400
 
-        # Fetch the question and option to verify the submission
         question = Questions.query.get(question_id)
         option = Options.query.filter_by(id=option_id, question_id=question_id).first()
 
         if not question or not option:
             return jsonify({'error': 'Question or option not found'}), 404
 
-        if question.use_case_id != int(use_case_id):  # Ensure correct use case
+        if question.use_case_id != int(use_case_id):
             return jsonify({'error': 'Question does not belong to the specified use case'}), 400
 
-        # Determine if the submitted option is correct
         is_correct = option.is_correct
 
-        # Record the attempt
         attempt = UserAnswers(
             user_id=current_user.id,
             use_case_id=int(use_case_id),
@@ -151,7 +149,6 @@ def submit_answer():
     db.session.commit()
 
     next_use_case = get_next_use_case(use_case_id)
-
     if next_use_case:
         first_question = get_first_question_of_use_case(next_use_case.id)
         next_use_case_data = {
