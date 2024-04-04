@@ -1,6 +1,7 @@
 from app import db
 from flask_login import UserMixin
 from enum import Enum
+from sqlalchemy.dialects.postgresql import JSONB
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
@@ -42,9 +43,8 @@ class UseCases(db.Model):
     type = db.Column(db.String, nullable=False)
     difficulty = db.Column(db.String, db.ForeignKey('difficulty_level.level'), nullable=False)  # Adjust as needed
     multiple_risks = db.Column(db.Boolean, nullable=False)
-    correct_answer = db.Column(db.String, nullable=False)
     final_decision = db.Column(db.String, nullable=False)
-    risk_factor_matrix_id = db.Column(db.Integer, db.ForeignKey('risk_factor_matrix.id'), nullable=True)
+    risk_factors = db.Column(JSONB)  # Use JSONB for the risk factors
     lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'), nullable=False)
     questions = db.relationship('Questions', backref='use_cases', lazy=True)
     created_by_user = db.Column(db.String, db.ForeignKey('users.id'), nullable=False)  # Adjust as needed
