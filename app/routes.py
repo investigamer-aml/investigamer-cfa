@@ -1,9 +1,9 @@
+from app import db
 from typing import Optional, Dict, Any
 from flask import current_app as app
 from flask import Flask, request, session, jsonify, render_template, redirect, url_for, jsonify
 from flask_login import login_user, current_user, login_required, logout_user, UserMixin, LoginManager
 from .models import Users, UseCases, Questions, UserAnswers, Options, Lessons, DifficultyLevel
-from app import db
 import markdown
 from datetime import datetime
 
