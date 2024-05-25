@@ -105,6 +105,26 @@ def start_lesson():
     else:
         return "Lesson not found", 404
 
+def find_similar_use_case(current_use_case_id, user_id):
+    current_use_case = UseCases.query.get(current_use_case_id)
+    if not current_use_case:
+        return None
+
+    current_risk_factors = current_use_case.risk_factors
+
+    # Query to find a similar use case based on risk factors
+    similar_use_case = UseCases.query.filter(
+        UseCases.id != current_use_case_id,
+        UseCases.risk_factors.contains(current_risk_factors),
+        ~UseCases.id.in_(
+            db.session.query(UserAnswers.use_case_id)
+            .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct == True)
+            .distinct()
+        )
+    ).first()
+
+    return similar_use_case
+
 @app.route('/submit-answer', methods=['POST'])
 def submit_answer():
     data = request.get_json()
@@ -117,6 +137,7 @@ def submit_answer():
         return jsonify({'error': 'Missing use case ID or answers data'}), 400
 
     results = []
+    has_mistake = False
     for answer in answers_data:
         question_id = answer.get('questionId')
         option_id = answer.get('answer')
@@ -145,7 +166,17 @@ def submit_answer():
         db.session.add(attempt)
         results.append({'questionId': question_id, 'isCorrect': is_correct})
 
+        if not is_correct:
+            has_mistake = True
+
     db.session.commit()
+
+    if has_mistake:
+        # Find a similar use case based on risk factors
+        similar_use_case = find_similar_use_case(use_case_id, current_user.id)
+        if similar_use_case:
+            # Store the similar use case ID in the session or temporary storage
+            session['similar_use_case_id'] = similar_use_case.id
 
     next_use_case = get_next_use_case(use_case_id)
     if next_use_case:
