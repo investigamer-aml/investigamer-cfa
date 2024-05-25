@@ -1,18 +1,14 @@
-# At the top of your env.py file
-import sys
 import os
-sys.path.append(os.getcwd())  # Ensure the root of your project is in the Python path
-
-from flask import current_app
-from app import db  # Adjust this import based on your actual project structure
-
-
+import sys
 from logging.config import fileConfig
 
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from flask import current_app
+from sqlalchemy import engine_from_config, pool
 
 from alembic import context
+from app import db  # Adjust this import based on your actual project structure
+
+sys.path.append(os.getcwd())  # Ensure the root of your project is in the Python path
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -61,9 +57,20 @@ def run_migrations_offline() -> None:
 
 # Then, in your run_migrations_online() function:
 def run_migrations_online():
+    """Run migrations in 'online' mode.
+
+    This configures the context with just a URL
+    and not an Engine, though an Engine is acceptable
+    here as well.  By skipping the Engine creation
+    we don't even need a DBAPI to be available.
+
+    Calls to context.execute() here emit the given string to the
+    script output.
+
+    """
     connectable = engine_from_config(
         config.get_section(config.config_ini_section),
-        prefix='sqlalchemy.',
+        prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
@@ -75,6 +82,7 @@ def run_migrations_online():
 
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
