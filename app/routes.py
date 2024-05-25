@@ -10,6 +10,7 @@ from datetime import datetime
 login_manager = LoginManager()
 login_manager.init_app(app)
 
+
 ##### REGISTRATION #####
 @app.route('/register', methods=['POST'])
 def register():
