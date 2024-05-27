@@ -1,14 +1,12 @@
-import os
-import sys
+"""ENV variables needed to run online and offline migrations of
+   the db models using SQL Alchemy
+"""
 from logging.config import fileConfig
 
-from flask import current_app
+from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from alembic import context
-from app import db  # Adjust this import based on your actual project structure
-
-sys.path.append(os.getcwd())  # Ensure the root of your project is in the Python path
+from dbb.models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -22,8 +20,7 @@ if config.config_file_name is not None:
 # add your model's MetaData object here
 # for 'autogenerate' support
 # from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -55,30 +52,21 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-# Then, in your run_migrations_online() function:
-def run_migrations_online():
+def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
+    In this scenario we need to create an Engine
+    and associate a connection with the context.
 
     """
     connectable = engine_from_config(
-        config.get_section(config.config_ini_section),
+        config.get_section(config.config_ini_section, {}),
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=db.metadata,  # Use the metadata from your models
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()

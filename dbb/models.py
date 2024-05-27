@@ -1,11 +1,16 @@
+""" DB models for the investigamer app
+"""
 from datetime import datetime
 from enum import Enum
 
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.ext.declarative import declarative_base
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import db
+
+Base = declarative_base()
 
 
 class DifficultyLevel(db.Model):
@@ -32,6 +37,7 @@ class Users(UserMixin, db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     hashed_password = db.Column(db.String(128), nullable=False)
     use_case_difficulty = db.Column(db.String(128), nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
     score = db.Column(db.Float, nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)  # Add this line
 
@@ -69,6 +75,8 @@ class Lessons(db.Model):
     Represents an educational lesson which may contain multiple use cases. Lessons provide structured learning paths.
     """
 
+    __tablename__ = "lessons"
+
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False)
 
@@ -82,21 +90,19 @@ class UseCases(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     description = db.Column(db.String, nullable=False)
     type = db.Column(db.String, nullable=False)
-    difficulty = db.Column(
-        db.String, db.ForeignKey("difficulty_level.level"), nullable=False
-    )  # Adjust as needed
+    difficulty_id = db.Column(
+        db.Integer, db.ForeignKey("difficulty_level.id"), nullable=False
+    )
     multiple_risks = db.Column(db.Boolean, nullable=False)
     final_decision = db.Column(db.String, nullable=False)
-    risk_factors = db.Column(JSONB)  # Use JSONB for the risk factors
+    risk_factors = db.Column(JSONB)
     lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
-    questions = db.relationship("Questions", backref="use_cases", lazy=True)
-    created_by_user = db.Column(
-        db.String, db.ForeignKey("users.id"), nullable=False
-    )  # Adjust as needed
+    questions = db.relationship("Questions", backref="use_case", lazy=True)
+    created_by_user = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
     def __repr__(self):
-        """Print itself"""
-        return "<UseCase %r>" % self.title
+        """Provide a string representation of the use case."""
+        return "<UseCase %r>" % self.description
 
 
 # class RiskFactorMatrix(db.Model):
@@ -118,6 +124,7 @@ class UserAnswers(db.Model):
     use_case_id = db.Column(db.Integer, db.ForeignKey("use_cases.id"), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), nullable=False)
     option_id = db.Column(db.Integer, db.ForeignKey("options.id"), nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
     is_correct = db.Column(db.Boolean, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
@@ -147,6 +154,7 @@ class Options(db.Model):
     Represents an answer option for a particular question. Each option knows whether it is the correct answer for its question.
     """
 
+    __tablename__ = "options"
     id = db.Column(db.Integer, primary_key=True)
     question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), nullable=False)
     text = db.Column(db.String, nullable=False)

@@ -1,37 +1,38 @@
 {% extends "base.html" %}
-
 {% block title %}Investigamer - Practice{% endblock %}
-
 {% block content %}
 <div class="container mx-auto py-8">
-    <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-bold mb-4">Practice</h2>
-        <div class="use-case-container">
-            <p id="use-case-description" class="text-lg mb-4">{{ use_case.description|safe }}</p>
-
-            <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
-                <input type="hidden" name="use_case_id" value="{{ use_case.id }}">
-
-                <div id="questions-container">
-                    {% for question in use_case.questions %}
-                    <div class="mb-6">
-                        <p class="font-bold mb-2">{{ question.text }}</p>
-                        {% for option in question.options %}
-                        <label class="block mb-2">
-                            <input type="radio" name="answer[{{ question.id }}]" value="{{ option.id }}" class="mr-2">
-                            {{ option.text }}
-                        </label>
-                        {% endfor %}
-                    </div>
-                    {% endfor %}
-                </div>
-
-                <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-                    Submit Answer
-                </button>
-            </form>
-        </div>
+  <div class="bg-white shadow-md rounded-lg p-6">
+    <h2 class="text-2xl font-bold mb-4">Practice</h2>
+    {% if is_similar_use_case %}
+    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+      <p class="font-bold">Similar Use Case</p>
+      <p>You made a mistake in the previous use case. Here's a similar use case to practice.</p>
     </div>
+    {% endif %}
+    <div class="use-case-container">
+      <p id="use-case-description" class="text-lg mb-4">{{ use_case.description|safe }}</p>
+      <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
+        <input type="hidden" name="use_case_id" value="{{ use_case.id }}">
+        <div id="questions-container">
+          {% for question in use_case.questions %}
+          <div class="mb-6">
+            <p class="font-bold mb-2">{{ question.text }}</p>
+            {% for option in question.options %}
+            <label class="block mb-2">
+              <input type="radio" name="answer[{{ question.id }}]" value="{{ option.id }}" class="mr-2">
+              {{ option.text }}
+            </label>
+            {% endfor %}
+          </div>
+          {% endfor %}
+        </div>
+        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+          Submit Answer
+        </button>
+      </form>
+    </div>
+  </div>
 </div>
 <script src="{{ url_for('static', filename='cfa.js') }}"></script>
 {% endblock %}
