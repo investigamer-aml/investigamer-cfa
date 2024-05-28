@@ -5,13 +5,13 @@ from flask_debugtoolbar import DebugToolbarExtension
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
-from config import DevelopmentConfig, ProductionConfig, TestingConfig
+from config import Config, DevelopmentConfig, ProductionConfig, TestingConfig
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 
 
-def create_app(env=None):
+def create_app(env=Config):
     """
     Creates and configures an instance of the Flask application.
 
@@ -23,7 +23,7 @@ def create_app(env=None):
         Flask: The Flask application instance.
     """
     app = Flask(__name__)
-    app.config.from_object(f"config.{env}")
+    app.config.from_object(env)
 
     db.init_app(app)
     login_manager.init_app(app)

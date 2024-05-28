@@ -1,16 +1,37 @@
 """ DB models for the investigamer app
 """
+import json
 from datetime import datetime
 from enum import Enum
 
 from flask_login import UserMixin
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.types import TEXT, TypeDecorator
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import db
 
 Base = declarative_base()
+
+
+class JSONEncodedDict(TypeDecorator):
+    """Enables JSON storage by encoding and decoding on the fly."""
+
+    impl = TEXT
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+        elif dialect.name == "postgresql":
+            return json.dumps(value)
+        else:
+            return json.dumps(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        return json.loads(value)
 
 
 class DifficultyLevel(db.Model):
@@ -95,10 +116,10 @@ class UseCases(db.Model):
     )
     multiple_risks = db.Column(db.Boolean, nullable=False)
     final_decision = db.Column(db.String, nullable=False)
-    risk_factors = db.Column(JSONB)
+    risk_factors = db.Column(JSONEncodedDict)
     lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
     questions = db.relationship("Questions", backref="use_case", lazy=True)
-    created_by_user = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    created_by_user = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
 
     def __repr__(self):
         """Provide a string representation of the use case."""

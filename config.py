@@ -39,4 +39,4 @@ class ProductionConfig(Config):
 
 class TestingConfig(Config):
     TESTING = True
-    DATABASE_URI = os.getenv("TEST_DATABASE_URI")
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
