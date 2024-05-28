@@ -9,3 +9,4 @@ pytest
 flask_testing
 alembic
 markdown
+python-dotenv
