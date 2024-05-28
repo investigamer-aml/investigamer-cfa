@@ -23,7 +23,7 @@ def create_app(env=None):
         Flask: The Flask application instance.
     """
     app = Flask(__name__)
-    app.config.from_object("config.DevelopmentConfig")
+    app.config.from_object(f"config.{env}")
 
     db.init_app(app)
     login_manager.init_app(app)
