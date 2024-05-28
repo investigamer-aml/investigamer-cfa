@@ -15,14 +15,28 @@ Attributes:
     DEBUG (bool): Enables or disables debug mode. When True, provides detailed error logs and
                   auto-reloads the server on code changes.
 """
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()  # This loads the variables from .env into the environment
 
 
 class Config:
-    """SQL Alchemy connection to PostgresSQL"""
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    DATABASE_URI = os.getenv("DATABASE_URI")
+    DEBUG = False
 
-    SQLALCHEMY_DATABASE_URI = (
-        "postgresql://data_admin:investigamer@localhost/ig_data_admin"
-    )
-    SECRET_KEY = "78f78214cd0360e847034d3bda9d117f"
+
+class DevelopmentConfig(Config):
     SQLALCHEMY_ECHO = False
     DEBUG = True
+
+
+class ProductionConfig(Config):
+    pass
+
+
+class TestingConfig(Config):
+    TESTING = True
+    DATABASE_URI = os.getenv("TEST_DATABASE_URI")
