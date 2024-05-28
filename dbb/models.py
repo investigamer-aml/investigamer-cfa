@@ -159,3 +159,30 @@ class Options(db.Model):
     question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), nullable=False)
     text = db.Column(db.String, nullable=False)
     is_correct = db.Column(db.Boolean, default=False, nullable=False)
+
+
+class UserLessonInteraction(db.Model):
+    """
+    Represents an interaction between a user and a lesson, tracking the progress and completions.
+    """
+
+    __tablename__ = "user_lesson_interactions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
+    completed = db.Column(db.Boolean, default=False, nullable=False)
+    completion_date = db.Column(db.DateTime)
+    score = db.Column(db.Float)  # Optional, if you track scoring
+    last_accessed = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship(
+        "Users", backref=db.backref("lesson_interactions", lazy="dynamic")
+    )
+    lesson = db.relationship(
+        "Lessons", backref=db.backref("user_interactions", lazy="dynamic")
+    )
+
+    def __repr__(self):
+        """Provide a string representation of the interaction."""
+        return f"<UserLessonInteraction(user_id={self.user_id}, lesson_id={self.lesson_id}, completed={self.completed})>"

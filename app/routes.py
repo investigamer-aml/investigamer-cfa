@@ -10,7 +10,7 @@ from flask_login import (LoginManager, UserMixin, current_user, login_required,
 
 from app import db
 from dbb.models import (DifficultyLevel, Lessons, Options, Questions, UseCases,
-                        UserAnswers, Users)
+                        UserAnswers, UserLessonInteraction, Users)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -602,27 +602,61 @@ def get_current_lesson(user_id):
     return None
 
 
+def update_lesson_progress(user_id, lesson_id, progress, score=None):
+    interaction = UserLessonInteraction.query.filter_by(
+        user_id=user_id, lesson_id=lesson_id
+    ).first()
+    if interaction:
+        interaction.progress = progress
+        interaction.last_accessed = datetime.utcnow()
+        if progress >= 100:
+            interaction.completed = True
+            interaction.completion_date = datetime.utcnow()
+            interaction.score = score
+    else:
+        interaction = UserLessonInteraction(
+            user_id=user_id,
+            lesson_id=lesson_id,
+            progress=progress,
+            last_accessed=datetime.utcnow(),
+            completed=progress >= 100,
+            completion_date=datetime.utcnow() if progress >= 100 else None,
+            score=score if progress >= 100 else None,
+        )
+        db.session.add(interaction)
+    db.session.commit()
+
+    return interaction
+
+
 def get_next_lesson(user_id: int) -> Dict[str, Any]:
     """
     Retrieves the next lesson for a user based on their progress and difficulty level.
     """
-    # Get the list of lesson IDs the user has completed
-    completed_lesson_ids = (
-        db.session.query(Users.lesson_id).filter_by(id=user_id).distinct().all()
-    )
-    completed_lesson_ids = [lesson_id[0] for lesson_id in completed_lesson_ids]
-
-    # Find the next lesson that the user hasn't completed
-    next_lesson = (
-        Lessons.query.filter(~Lessons.id.in_(completed_lesson_ids))
-        .order_by(Lessons.id)
+    last_interaction = (
+        UserLessonInteraction.query.filter_by(user_id=user_id)
+        .order_by(UserLessonInteraction.last_accessed.desc())
         .first()
     )
+    print(last_interaction)
+
+    if last_interaction and last_interaction.completed:
+        next_lesson = (
+            Lessons.query.filter(Lessons.id > last_interaction.lesson_id)
+            .order_by(Lessons.id)
+            .first()
+        )
+        print(next_lesson)
+    else:
+        next_lesson = (
+            Lessons.query.filter_by(id=last_interaction.lesson_id).first()
+            if last_interaction
+            else Lessons.query.first()
+        )
 
     if next_lesson:
         # Retrieve the associated use cases for the next lesson
         use_cases = UseCases.query.filter_by(lesson_id=next_lesson.id).all()
-
         lesson_data = {
             "id": next_lesson.id,
             "title": next_lesson.title,
@@ -637,6 +671,4 @@ def get_next_lesson(user_id: int) -> Dict[str, Any]:
         }
 
         return lesson_data
-
-
-get_next_lesson
+    return None
