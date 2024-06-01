@@ -3,8 +3,7 @@
 {% block content %}
 <div class="container mx-auto py-8">
   <div class="bg-white shadow-md rounded-lg p-6">
-    <h1 class="text-3xl font-bold mb-4">Lesson: {{ use_case.lesson_title }}</h1>
-    <h2 class="text-xl font-semibold mb-2">Lesson ID: {{ use_case.lesson_id }}, UseCase ID: {{ use_case.id }}</h2>
+    <h1 class="text-3xl font-bold mb-4" style="color: #7e7b7b;">Lesson: {{ use_case.lesson_title }}</h1>
     <h2 class="text-2xl font-bold mb-4">Practice</h2>
     {% if is_similar_use_case %}
     <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
@@ -14,12 +13,12 @@
     {% endif %}
     <div class="use-case-container">
       <div id="progress-bar-container" class="mb-4">
-        <div id="progress-bar" class="bg-green-500 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded" style="width: 0%">0%</div>
-    </div>
-    <div id="remaining-use-cases" class="text-sm mb-4">
+        <div id="progress-bar" class="bg-green-500 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded" style="width: 100%">0%</div>
+      </div>
+      <div id="remaining-use-cases" class="text-sm mb-4 text-right">
         Remaining use cases: <span id="remaining-count">Calculating...</span>
-    </div>
-    <div id="answer-feedback" class="hidden text-center py-2 px-4 rounded text-white"></div>
+      </div>
+      <div id="answer-feedback" class="hidden text-center py-2 px-4 rounded text-white"></div>
       <p id="use-case-description" class="text-lg mb-4">{{ use_case.description|safe }}</p>
       <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
         <input type="hidden" name="use_case_id" value="{{ use_case.id }}">
@@ -40,6 +39,9 @@
           Submit Answer
         </button>
       </form>
+      <div class="text-xs text-gray-500 text-right">
+        Lesson ID: {{ use_case.lesson_id }}, UseCase ID: {{ use_case.id }}
+      </div>
     </div>
   </div>
 </div>
