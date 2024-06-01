@@ -1,29 +1,31 @@
 {% extends "base.html" %}
 {% block title %}Investigamer - Practice{% endblock %}
 {% block content %}
-<div class="container mx-auto py-8">
+<div class="container mx-auto py-8 px-4">
   <div class="bg-white shadow-md rounded-lg p-6">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
-    <!-- Lesson Title outside use-case container -->
-    <h1 class="text-3xl font-bold mb-4 text-gray-700">{{ use_case.lesson_title }}</h1>
-    <h2 class="text-2xl font-bold mb-4 text-gray-700">Practice</h2>
+    <!-- Standalone lesson title for clear visibility and focus -->
+    <div class="text-center">
+      <h1 class="text-4xl font-bold mb-2 text-teal-800">{{ use_case.lesson_title }}</h1>
+      <h2 class="text-2xl font-bold mb-4 text-teal-600">Practice Session</h2>
+    </div>
 
     {% if is_similar_use_case %}
     <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
-      <p class="font-bold">Similar Use Case</p>
-      <p>You made a mistake in the previous use case. Here's a similar use case to practice.</p>
+      <p class="font-bold">Heads Up! Similar Use Case Ahead</p>
+      <p>This is your chance to correct a previous mistake. Practice makes perfect!</p>
     </div>
     {% endif %}
 
-    <div class="use-case-container bg-gray-50 rounded-lg p-4 shadow-inner">
-      <div id="progress-bar-container" class="mb-4">
-        <div id="progress-bar" class="bg-green-500 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded" style="width: 100%">0%</div>
+    <div class="use-case-container bg-gray-100 rounded-lg p-6 shadow-inner">
+      <div id="progress-bar-container" class="mb-6">
+        <div id="progress-bar" class="bg-green-500 text-xs font-medium text-white text-center py-1 rounded-full" style="width: 0%">0%</div>
       </div>
       <div id="remaining-use-cases" class="text-sm mb-4 text-right text-gray-600">
         Remaining use cases: <span id="remaining-count">Calculating...</span>
       </div>
-      <div id="answer-feedback" class="hidden text-center py-2 px-4 rounded text-white"></div>
+      <div id="answer-feedback" class="hidden text-center py-2 px-4 rounded bg-red-500 text-white"></div>
       <p id="use-case-description" class="text-lg mb-4 text-gray-700">{{ use_case.description|safe }}</p>
       <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
         <input type="hidden" name="use_case_id" value="{{ use_case.id }}">
@@ -32,15 +34,15 @@
           <div class="mb-6">
             <p class="font-bold mb-2 text-gray-700">{{ question.text }}</p>
             {% for option in question.options %}
-            <label class="block mb-2">
-              <input type="radio" name="answer[{{ question.id }}]" value="{{ option.id }}" class="mr-2">
+            <label class="block mb-2 cursor-pointer">
+              <input type="radio" name="answer[{{ question.id }}]" value="{{ option.id }}" class="mr-2 leading-tight">
               {{ option.text }}
             </label>
             {% endfor %}
           </div>
           {% endfor %}
         </div>
-        <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+        <button type="submit" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-full mt-4">
           Submit Answer
         </button>
       </form>
@@ -52,7 +54,7 @@
 </div>
 <script src="{{ url_for('static', filename='cfa.js') }}"></script>
 
-<<script>
+<script>
   document.addEventListener('DOMContentLoaded', function() {
       let totalUseCases = {{ total_use_cases }};
       let completedUseCases = {{ correct_use_cases }};
