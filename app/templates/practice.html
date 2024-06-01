@@ -13,6 +13,13 @@
     </div>
     {% endif %}
     <div class="use-case-container">
+      <div id="progress-bar-container" class="mb-4">
+        <div id="progress-bar" class="bg-green-500 text-xs font-medium text-blue-100 text-center p-0.5 leading-none rounded" style="width: 0%">0%</div>
+    </div>
+    <div id="remaining-use-cases" class="text-sm mb-4">
+        Remaining use cases: <span id="remaining-count">Calculating...</span>
+    </div>
+    <div id="answer-feedback" class="hidden text-center py-2 px-4 rounded text-white"></div>
       <p id="use-case-description" class="text-lg mb-4">{{ use_case.description|safe }}</p>
       <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
         <input type="hidden" name="use_case_id" value="{{ use_case.id }}">
@@ -37,4 +44,65 @@
   </div>
 </div>
 <script src="{{ url_for('static', filename='cfa.js') }}"></script>
+<<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      let totalUseCases = {{ total_use_cases }};
+      let completedUseCases = {{ correct_use_cases }};
+
+      const progressBar = document.getElementById('progress-bar');
+      const remainingCount = document.getElementById('remaining-count');
+      const answerFeedback = document.getElementById('answer-feedback');
+      const useCaseContainer = document.querySelector('.use-case-container');
+
+      updateProgressBar();
+      updateRemainingUseCases();
+
+      useCaseContainer.addEventListener('submit', async function(event) {
+          event.preventDefault();
+          if (event.target.tagName === 'FORM') {
+              const response = await fetch(event.target.action, {
+                  method: event.target.method,
+                  body: new FormData(event.target)
+              });
+              const responseData = await response.json();
+
+              if (responseData.isCorrect) {
+                  completedUseCases++;
+                  answerFeedback.textContent = 'Correct answer!';
+                  answerFeedback.className = 'bg-green-500 text-center py-2 px-4 rounded text-white';
+              } else {
+                  answerFeedback.textContent = 'Incorrect answer!';
+                  answerFeedback.className = 'bg-red-500 text-center py-2 px-4 rounded text-white';
+              }
+              answerFeedback.classList.remove('hidden');
+              setTimeout(() => answerFeedback.classList.add('hidden'), 3000);
+
+              updateProgressBar();
+              updateRemainingUseCases();
+
+              if (responseData.nextUseCase) {
+                  loadNextUseCase(responseData.nextUseCase);
+              } else {
+                  useCaseContainer.innerHTML = '<p>All use cases completed!</p>';
+              }
+          }
+      });
+
+      function updateProgressBar() {
+          let progressPercentage = (completedUseCases / totalUseCases) * 100;
+          progressBar.style.width = `${progressPercentage}%`;
+          progressBar.textContent = `${progressPercentage.toFixed(0)}%`;
+      }
+
+      function updateRemainingUseCases() {
+          let remaining = totalUseCases - completedUseCases;
+          remainingCount.textContent = remaining;
+      }
+  });
+
+  function loadNextUseCase(nextUseCase) {
+      // Implement function to load the next use case details
+      // This could involve updating the inner HTML of useCaseContainer
+  }
+</script>
 {% endblock %}
