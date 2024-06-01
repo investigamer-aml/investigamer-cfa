@@ -7,6 +7,7 @@ from flask import current_app as app
 from flask import jsonify, redirect, render_template, request, session, url_for
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
+from sqlalchemy.sql import func
 
 from app import db
 from dbb.models import (DifficultyLevel, Lessons, Options, Questions, UseCases,
@@ -141,7 +142,7 @@ def start_lesson():
     else:
         current_lesson = get_current_lesson(user_id)
         if current_lesson:
-            current_use_case = get_current_use_case(user_id, current_lesson['id'])
+            current_use_case = get_current_use_case(user_id, current_lesson["id"])
 
             if current_use_case:
                 use_case = current_use_case
@@ -165,7 +166,7 @@ def start_lesson():
     use_case_data = {
         "id": use_case.id,
         "lesson_id": use_case.lesson_id,
-        "lesson_title": current_lesson['title'],
+        "lesson_title": current_lesson["title"],
         "description": use_case.description,
         "questions": [
             {
@@ -483,15 +484,18 @@ def get_current_use_case(user_id, lesson_id):
     # Get the IDs of use cases the user has completed in this lesson
     completed_use_cases = (
         db.session.query(UserAnswers.use_case_id)
-        .filter(UserAnswers.user_id == user_id, UserAnswers.lesson_id == lesson_id, UserAnswers.is_correct == True)
+        .filter(
+            UserAnswers.user_id == user_id,
+            UserAnswers.lesson_id == lesson_id,
+            UserAnswers.is_correct == True,
+        )
         .distinct()
         .subquery()
     )
 
     # Find the first uncompleted use case in the current lesson
     current_use_case = (
-        UseCases.query
-        .filter_by(lesson_id=lesson_id)
+        UseCases.query.filter_by(lesson_id=lesson_id)
         .filter(~UseCases.id.in_(completed_use_cases))
         .order_by(UseCases.id)
         .first()
@@ -584,7 +588,7 @@ def prepare_first_question_data(first_question):
 
 
 def get_current_lesson(user_id):
-    """Fetch the current lesson the user is on
+    """Fetch the current lesson the user is on.
 
     Input:
     - user_id (int) -> user identifier
@@ -592,18 +596,50 @@ def get_current_lesson(user_id):
     Output:
     - lesson_id (int) -> lesson identifier
     """
-    # Get the list of lesson IDs the user has completed
-    completed_lesson_ids = (
-        db.session.query(UserAnswers.lesson_id)
-        .filter_by(user_id=user_id)
-        .distinct()
-        .all()
-    )
-    completed_lesson_ids = [lesson_id[0] for lesson_id in completed_lesson_ids]
 
-    # Find the first lesson that the user hasn't completed
+    # Subquery to get the number of correct answers per lesson for the user
+    correct_answers_subquery = (
+        db.session.query(
+            UserAnswers.lesson_id, func.count(UserAnswers.id).label("correct_count")
+        )
+        .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct == True)
+        .group_by(UserAnswers.lesson_id)
+        .subquery()
+    )
+
+    # Subquery to get the total number of questions per lesson
+    total_questions_subquery = (
+        db.session.query(
+            UseCases.lesson_id, func.count(Questions.id).label("total_questions")
+        )
+        .join(Questions, UseCases.id == Questions.use_case_id)
+        .group_by(UseCases.lesson_id)
+        .subquery()
+    )
+
+    # Join the two subqueries to find lessons where the number of correct answers equals the total number of questions
+    completed_lessons_subquery = (
+        db.session.query(total_questions_subquery.c.lesson_id)
+        .join(
+            correct_answers_subquery,
+            correct_answers_subquery.c.lesson_id
+            == total_questions_subquery.c.lesson_id,
+        )
+        .filter(
+            correct_answers_subquery.c.correct_count
+            == total_questions_subquery.c.total_questions
+        )
+        .subquery()
+    )
+
+    # Find the first lesson that the user hasn't completed correctly
     current_lesson = (
-        Lessons.query.filter(~Lessons.id.in_(completed_lesson_ids))
+        db.session.query(Lessons)
+        .outerjoin(
+            completed_lessons_subquery,
+            Lessons.id == completed_lessons_subquery.c.lesson_id,
+        )
+        .filter(completed_lessons_subquery.c.lesson_id == None)
         .order_by(Lessons.id)
         .first()
     )
