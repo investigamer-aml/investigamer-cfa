@@ -14,25 +14,20 @@ from app import db
 
 Base = declarative_base()
 
-
 class JSONEncodedDict(TypeDecorator):
-    """Enables JSON storage by encoding and decoding on the fly."""
-
     impl = TEXT
 
     def process_bind_param(self, value, dialect):
         if value is None:
             return None
-        elif dialect.name == "postgresql":
-            return json.dumps(value)
-        else:
-            return json.dumps(value)
+        return json.dumps(value)
 
     def process_result_value(self, value, dialect):
         if value is None:
             return None
+        if isinstance(value, dict):
+            return value
         return json.loads(value)
-
 
 class DifficultyLevel(db.Model):
     """

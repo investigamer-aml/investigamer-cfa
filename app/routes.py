@@ -141,7 +141,7 @@ def start_lesson():
     else:
         current_lesson = get_current_lesson(user_id)
         if current_lesson:
-            current_use_case = get_current_use_case(user_id, current_lesson["id"])
+            current_use_case = get_current_use_case(user_id, current_lesson['id'])
 
             if current_use_case:
                 use_case = current_use_case
@@ -164,6 +164,8 @@ def start_lesson():
     # Prepare the use case data for the template
     use_case_data = {
         "id": use_case.id,
+        "lesson_id": use_case.lesson_id,
+        "lesson_title": current_lesson['title'],
         "description": use_case.description,
         "questions": [
             {
@@ -468,19 +470,29 @@ def record_attempt(
 
 
 def get_current_use_case(user_id, lesson_id):
-    # Get the list of use case IDs the user has completed in the current lesson
-    completed_use_case_ids = (
-        db.session.query(UserAnswers.use_case_id)
-        .filter_by(user_id=user_id, lesson_id=lesson_id)
-        .distinct()
-        .all()
-    )
-    completed_use_case_ids = [use_case_id[0] for use_case_id in completed_use_case_ids]
+    """
+    Retrieves the first uncompleted use case in the given lesson for the specified user.
 
-    # Find the first use case in the current lesson that the user hasn't completed
+    Args:
+        user_id (int): The identifier of the user.
+        lesson_id (int): The identifier of the lesson.
+
+    Returns:
+        UseCases | None: The first uncompleted use case or None if all are completed.
+    """
+    # Get the IDs of use cases the user has completed in this lesson
+    completed_use_cases = (
+        db.session.query(UserAnswers.use_case_id)
+        .filter(UserAnswers.user_id == user_id, UserAnswers.lesson_id == lesson_id, UserAnswers.is_correct == True)
+        .distinct()
+        .subquery()
+    )
+
+    # Find the first uncompleted use case in the current lesson
     current_use_case = (
-        UseCases.query.filter_by(lesson_id=lesson_id)
-        .filter(~UseCases.id.in_(completed_use_case_ids))
+        UseCases.query
+        .filter_by(lesson_id=lesson_id)
+        .filter(~UseCases.id.in_(completed_use_cases))
         .order_by(UseCases.id)
         .first()
     )
@@ -597,6 +609,7 @@ def get_current_lesson(user_id):
     )
 
     if current_lesson:
+        print(current_lesson)
         return {"id": current_lesson.id, "title": current_lesson.title}
 
     return None

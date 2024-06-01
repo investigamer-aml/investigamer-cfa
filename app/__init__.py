@@ -1,37 +1,24 @@
 import os
-
 from flask import Flask
-from flask_debugtoolbar import DebugToolbarExtension
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
-
-from config import Config, DevelopmentConfig, ProductionConfig, TestingConfig
 
 db = SQLAlchemy()
 login_manager = LoginManager()
 
-
-def create_app(env=Config):
+def create_app(config_class='Config'):
     """
     Creates and configures an instance of the Flask application.
-
-    Sets up the configuration, initializes the database, and registers the login manager.
-    Routes are imported and the database tables are created within the application context.
-    This setup pattern follows the application factory pattern recommended by Flask for larger applications.
-
-    Returns:
-        Flask: The Flask application instance.
     """
     app = Flask(__name__)
-    app.config.from_object(env)
+    config_module = __import__('config', fromlist=[config_class])
+    app.config.from_object(getattr(config_module, config_class))
 
     db.init_app(app)
     login_manager.init_app(app)
-    # toolbar = DebugToolbarExtension(app)
 
     with app.app_context():
         from . import routes  # Import routes
-
-        db.create_all()
+        db.create_all()  # Consider using migrations in production
 
     return app
