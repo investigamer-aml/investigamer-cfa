@@ -16,11 +16,10 @@
             z-index: -1;
         }
         .sticky-footer-wrapper {
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
         }
-
         main {
             flex-grow: 1;
         }
@@ -37,9 +36,8 @@
                 <a href="/practice" class="mr-5 hover:text-gray-300">Practice</a>
                 <a href="/lessons" class="mr-5 hover:text-gray-300">Lessons</a>
                 {% if current_user.is_admin %}
-                <a href="/admin" class="mr-5 hover:text-gray-300">Admin</a> <!-- Admin link -->
+                <a href="/admin" class="mr-5 hover:text-gray-300">Admin</a>
                 {% endif %}
-                <!-- Removed Profile text link -->
                 <a href="/profile" class="hover:text-gray-300">
                     <div class="ml-4 inline-flex items-center justify-center bg-blue-500 rounded-full h-10 w-10">
                         <span class="text-xl text-white font-semibold">
@@ -47,19 +45,17 @@
                         </span>
                     </div>
                 </a>
-            {% endif %}
+                {% endif %}
             </nav>
         </div>
     </header>
     <main class="flex-grow">
         {% block content %}
-        <!-- Page-specific content will go here -->
         {% endblock %}
     </main>
     <footer class="bg-white text-right py-4 w-full">
-        <!-- <div class="container mx-auto flex items-center justify-center sm:flex-row flex-col py-4"> -->
-        <div class="container items-right justify-center mx-auto sm:py-2  flex">
-            <p class="text-sm text-gray-500 sm:ml-4 sm:pl-4 sm:border-l-2 sm:border-gray-200 sm:py-2 sm:mt-0 mt-4">© 2024 Investigamer —
+        <div class="container mx-auto sm:py-2 flex justify-between items-center">
+            <p class="text-sm text-gray-500">© 2024 Investigamer —
                 <a href="https://twitter.com/knyttneve" class="text-gray-600 ml-1" rel="noopener noreferrer" target="_blank">@investigamer_aml</a>
             </p>
             <span class="inline-flex sm:ml-auto sm:mt-0 mt-4 justify-center sm:justify-start">
