@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import Any, Dict, Optional
 
@@ -195,10 +196,12 @@ def start_lesson():
 
 
 def get_lessons_use_case_count(lesson_id):
+    """Get the total number of cases in a lesson"""
     return db.session.query(UseCases).filter(UseCases.lesson_id == lesson_id).count()
 
 
 def get_users_correct_use_cases_per_lesson(lesson_id, user_id):
+    """Check how many correct use cases a user has submitted within a lesson"""
     return (
         db.session.query(UserAnswers)
         .filter(
@@ -210,7 +213,41 @@ def get_users_correct_use_cases_per_lesson(lesson_id, user_id):
     )
 
 
-def find_similar_use_case(current_use_case_id, user_id):
+def json_contains(json_obj, query, threshold=0.75):
+    """Check if json_obj contains at least the threshold percentage of key-value pairs in query."""
+
+    # Flatten the JSON objects for easier comparison
+    def flatten_json(y):
+        out = {}
+
+        def flatten(x, name=""):
+            if type(x) is dict:
+                for a in x:
+                    flatten(x[a], name + a + ".")
+            else:
+                out[name[:-1]] = x
+
+        flatten(y)
+        return out
+
+    flat_json_obj = flatten_json(json_obj)
+    flat_query = flatten_json(query)
+
+    total_keys = len(flat_query)
+    matching_keys = sum(
+        1
+        for key in flat_query
+        if key in flat_json_obj and flat_json_obj[key] == flat_query[key]
+    )
+
+    similarity = matching_keys / total_keys if total_keys > 0 else 0
+    formatted_similarity = f"{similarity:.2%}"
+    app.logger.info(f"Similarity = {formatted_similarity}")
+
+    return similarity >= threshold
+
+
+def find_similar_use_case(current_use_case_id, user_id, lesson_id):
     """
     Finds a use case similar to the current one based on shared risk factors.
 
@@ -227,20 +264,28 @@ def find_similar_use_case(current_use_case_id, user_id):
     if not current_use_case:
         return None
 
+    app.logger.info(f"/nCurrent Case {current_use_case.risk_factors}")
+
     current_risk_factors = current_use_case.risk_factors
+    # current_risk_factors = json.loads(current_risk_factors)
 
     # Query to find a similar use case based on risk factors
-    similar_use_case = UseCases.query.filter(
+    similar_use_cases = UseCases.query.filter(
+        UseCases.lesson_id == lesson_id,
         UseCases.id != current_use_case_id,
-        UseCases.risk_factors.contains(current_risk_factors),
         ~UseCases.id.in_(
             db.session.query(UserAnswers.use_case_id)
             .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct)
             .distinct()
         ),
-    ).first()
+    ).all()
 
-    return similar_use_case
+    for use_case in similar_use_cases:
+        risk_factors = use_case.risk_factors
+        if json_contains(risk_factors, current_risk_factors):
+            return use_case
+
+    return None
 
 
 @app.route("/submit-answer", methods=["POST"])
@@ -252,7 +297,7 @@ def submit_answer():
     app.logger.info(f"Received data: {data}")
 
     use_case_id = data.get("use_case_id")
-    lesson_id = 1  # TODO pass correctly
+    # lesson_id = 1  current_user.lesson_id
     answers_data = data.get("answers")
 
     if not use_case_id or not answers_data:
@@ -289,7 +334,7 @@ def submit_answer():
             question_id=int(question_id),
             option_id=int(option_id),
             is_correct=is_correct,
-            lesson_id=lesson_id,
+            lesson_id=current_user.lesson_id,
         )
         db.session.add(attempt)
         results.append({"questionId": question_id, "isCorrect": is_correct})
@@ -301,7 +346,9 @@ def submit_answer():
 
     if has_mistake:
         # Find a similar use case based on risk factors
-        similar_use_case = find_similar_use_case(use_case_id, current_user.id)
+        similar_use_case = find_similar_use_case(
+            use_case_id, current_user.id, current_user.lesson_id
+        )
         if similar_use_case:
             # Store the similar use case ID in the session or temporary storage
             session["similar_use_case_id"] = similar_use_case.id
@@ -481,19 +528,21 @@ def get_first_question_of_use_case(use_case_id):
     )
 
 
-def record_attempt(
-    user_id, use_case_id, question_id, user_answers, lesson_id, is_correct
-):
-    attempt = UserAnswers(
-        user_id=user_id,
-        use_case_id=use_case_id,
-        question_id=question_id,
-        option_id=",".join(user_answers),
-        lesson_id=lesson_id,
-        is_correct=is_correct,
-    )
-    db.session.add(attempt)
-    db.session.commit()
+# def record_attempt(
+#     user_id, use_case_id, question_id, user_answers, lesson_id, is_correct
+# ):
+#  """Submit answer to db"""
+
+#     attempt = UserAnswers(
+#         user_id=user_id,
+#         use_case_id=use_case_id,
+#         question_id=question_id,
+#         option_id=",".join(user_answers),
+#         lesson_id=lesson_id,
+#         is_correct=is_correct,
+#     )
+#     db.session.add(attempt)
+#     db.session.commit()
 
 
 def get_current_use_case(user_id, lesson_id):
