@@ -144,7 +144,9 @@ def start_lesson():
         if current_lesson:
             current_use_case = get_current_use_case(user_id, current_lesson["id"])
             total_use_cases = get_lessons_use_case_count(current_lesson["id"])
-            correct_use_cases = get_users_correct_use_cases_per_lesson(current_lesson["id"], user_id)
+            correct_use_cases = get_users_correct_use_cases_per_lesson(
+                current_lesson["id"], user_id
+            )
 
             if current_use_case:
                 use_case = current_use_case
@@ -184,21 +186,28 @@ def start_lesson():
     }
 
     return render_template(
-        "practice.html", use_case=use_case_data, is_similar_use_case=is_similar_use_case,
-        total_use_cases=total_use_cases, correct_use_cases=correct_use_cases
+        "practice.html",
+        use_case=use_case_data,
+        is_similar_use_case=is_similar_use_case,
+        total_use_cases=total_use_cases,
+        correct_use_cases=correct_use_cases,
     )
+
 
 def get_lessons_use_case_count(lesson_id):
-    return (db.session.query(UseCases)
-        .filter(UseCases.lesson_id == lesson_id)
-        .count()
-    )
+    return db.session.query(UseCases).filter(UseCases.lesson_id == lesson_id).count()
+
 
 def get_users_correct_use_cases_per_lesson(lesson_id, user_id):
-    return (db.session.query(UserAnswers)
-        .filter(UserAnswers.lesson_id == lesson_id, UserAnswers.user_id == user_id, UserAnswers.is_correct)
+    return (
+        db.session.query(UserAnswers)
+        .filter(
+            UserAnswers.lesson_id == lesson_id,
+            UserAnswers.user_id == user_id,
+            UserAnswers.is_correct,
+        )
         .count()
-)
+    )
 
 
 def find_similar_use_case(current_use_case_id, user_id):
@@ -243,6 +252,7 @@ def submit_answer():
     app.logger.info(f"Received data: {data}")
 
     use_case_id = data.get("use_case_id")
+    lesson_id = 1  # TODO pass correctly
     answers_data = data.get("answers")
 
     if not use_case_id or not answers_data:
@@ -279,6 +289,7 @@ def submit_answer():
             question_id=int(question_id),
             option_id=int(option_id),
             is_correct=is_correct,
+            lesson_id=lesson_id,
         )
         db.session.add(attempt)
         results.append({"questionId": question_id, "isCorrect": is_correct})

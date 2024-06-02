@@ -14,6 +14,7 @@ from app import db
 
 Base = declarative_base()
 
+
 class JSONEncodedDict(TypeDecorator):
     impl = TEXT
 
@@ -28,6 +29,7 @@ class JSONEncodedDict(TypeDecorator):
         if isinstance(value, dict):
             return value
         return json.loads(value)
+
 
 class DifficultyLevel(db.Model):
     """
@@ -109,8 +111,8 @@ class UseCases(db.Model):
     difficulty_id = db.Column(
         db.Integer, db.ForeignKey("difficulty_level.id"), nullable=False
     )
-    multiple_risks = db.Column(db.Boolean, nullable=False)
-    final_decision = db.Column(db.String, nullable=False)
+    # multiple_risks = db.Column(db.Boolean, nullable=False)
+    # final_decision = db.Column(db.String, nullable=False)
     risk_factors = db.Column(JSONEncodedDict)
     lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
     questions = db.relationship("Questions", backref="use_case", lazy=True)
