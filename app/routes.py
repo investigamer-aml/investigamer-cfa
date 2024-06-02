@@ -125,10 +125,26 @@ def home():
     return render_template("index.html")
 
 
+@app.route("/choose-practice", methods=["GET", "POST"])
+def choose_practice():
+    if request.method == "POST":
+        practice_type = request.form.get("practice_type")
+        if practice_type in ["KYC", "TMS"]:
+            return redirect(url_for("start_lesson", practice_type=practice_type))
+        else:
+            return render_template("choose_practice.html", error="Invalid choice")
+
+    return render_template("choose_practice.html")
+
+
 # Define your models based on the provided schema
 @app.route("/practice/<int:lesson_id>")
 @app.route("/practice")
-def start_lesson():
+@app.route("/practice/<string:practice_type>")
+def start_lesson(practice_type=None):
+    if practice_type not in ["KYC", "TM"]:
+        return redirect(url_for("choose_practice"))
+
     user_id = current_user.id
 
     # Check if there is a similar use case ID stored in the session
@@ -379,13 +395,18 @@ def submit_answer():
 @login_required
 def admin():
     """
-    Display the admin page with a list of use cases created by the current logged-in user.
-
-    Returns:
-        Rendered template for the admin dashboard.
+    Display the admin page with a list of use cases created by the current logged-in user, filtered by type.
     """
-    # Assuming 'current_user' is the logged-in user
-    use_cases = UseCases.query.filter_by(created_by_user=current_user.id).all()
+    # Retrieve a type filter from query parameters (if any)
+    type_filter = request.args.get("type")
+
+    if type_filter:
+        use_cases = UseCases.query.filter_by(
+            created_by_user=current_user.id, type=type_filter
+        ).all()
+    else:
+        use_cases = UseCases.query.filter_by(created_by_user=current_user.id).all()
+
     return render_template("admin.html", use_cases=use_cases)
 
 
