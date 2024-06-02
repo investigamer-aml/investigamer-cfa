@@ -1,7 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const useCaseContainer = document.querySelector('.use-case-container');
-    const totalUseCases = parseInt(document.querySelector('data-total-use-cases'));
-    let completedUseCases = parseInt(document.querySelector('data-completed-use-cases'));
+    const useCaseDataElement = document.querySelector('#use-case-data'); // Correctly reference the use-case-data element
+    let totalUseCases = parseInt(useCaseDataElement.dataset.totalUseCases, 10);
+    let completedUseCases = parseInt(useCaseDataElement.dataset.completedUseCases, 10);
+    console.log('COMPLETED CASES', completedUseCases)
 
     // Event delegation for form submission
     useCaseContainer.addEventListener('submit', async function(event) {
@@ -34,6 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
           if (responseData.isCorrect) {
             completedUseCases++;
+            completedUseCases = parseFloat(completedUseCases);
             updateProgressBar();
             updateRemainingUseCases();
             displayFeedback(true); // Show success message
@@ -75,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function updateProgressBar() {
       const progressBar = document.getElementById('progress-bar');
-      let progressPercentage = (parseInt(completedUseCases) / totalUseCases) * 100;
+      let progressPercentage = (completedUseCases / totalUseCases) * 100;
       progressBar.style.width = `${progressPercentage}%`;
       progressBar.textContent = `${progressPercentage.toFixed(0)}%`;
     }
