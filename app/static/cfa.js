@@ -28,6 +28,17 @@ document.addEventListener('DOMContentLoaded', function() {
           }
           const responseData = await response.json();
           console.log('Response data:', responseData);
+
+
+          if (responseData.isCorrect) {
+            completedUseCases++;
+            updateProgressBar();
+            updateRemainingUseCases();
+            displayFeedback(true); // Show success message
+          } else {
+            displayFeedback(false); // Show error message
+          }
+
           if (responseData.nextUseCase) {
             loadNextUseCase(responseData.nextUseCase);
           } else {
@@ -35,24 +46,62 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         } catch (error) {
           console.error('Error:', error);
+          displayFeedback(false, error.message); // Show error with message
         }
       }
     });
 
     function loadNextUseCase(useCase) {
       console.log('Loading next use case:', useCase);
-      useCaseContainer.innerHTML = `
-        <p id="use-case-description" class="text-lg mb-4">${useCase.description}</p>
-        <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
-          <input type="hidden" name="use_case_id" value="${useCase.useCaseId}">
-          <div id="questions-container">
-            ${generateQuestionHTML(useCase.firstQuestion)}
-          </div>
-          <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-            Submit Answer
-          </button>
-        </form>
-      `;
+
+      // Update the use case description
+      const description = document.getElementById('use-case-description');
+      description.innerHTML = useCase.description;
+
+      // Update the hidden input for use case ID to the new ID
+      const useCaseIdInput = document.querySelector('input[name="use_case_id"]');
+      useCaseIdInput.value = useCase.useCaseId;
+
+      // Update the questions section with new questions
+      const questionsContainer = document.getElementById('questions-container');
+      questionsContainer.innerHTML = generateQuestionHTML(useCase.firstQuestion);
+
+      // Update any additional information that depends on the use case, like lesson ID and UseCase ID in the footer
+      const lessonInfo = document.querySelector('.text-xs.text-gray-500.text-right.mt-4');
+      lessonInfo.textContent = `Lesson ID: ${useCase.lessonId}, UseCase ID: ${useCase.useCaseId}`;
+    }
+
+    function updateProgressBar() {
+      const progressBar = document.getElementById('progress-bar');
+      let progressPercentage = (completedUseCases / totalUseCases) * 100;
+      progressBar.style.width = `${progressPercentage}%`;
+      progressBar.textContent = `${progressPercentage.toFixed(0)}%`;
+    }
+
+    function updateRemainingUseCases() {
+      const remainingCount = document.getElementById('remaining-count');
+      let remaining = totalUseCases - completedUseCases;
+      remainingCount.textContent = remaining;
+    }
+
+    function playSound(file) {
+      const audio = new Audio(`/static/${file}`);
+      audio.play();
+    }
+
+    function displayFeedback(isCorrect, message = '') {
+      const feedback = document.getElementById('answer-feedback');
+      if (isCorrect) {
+        feedback.textContent = 'Correct answer!';
+        feedback.className = 'bg-green-500 text-center py-2 px-4 rounded text-white';
+        playSound('correct.mp3'); // Assuming you have this audio file
+      } else {
+        feedback.textContent = message || 'Incorrect answer!';
+        feedback.className = 'bg-red-500 text-center py-2 px-4 rounded text-white';
+        playSound('wrong.mp3'); // Assuming you have this audio file
+      }
+      feedback.classList.remove('hidden');
+      setTimeout(() => feedback.classList.add('hidden'), 3000);
     }
 
     function generateQuestionHTML(question) {

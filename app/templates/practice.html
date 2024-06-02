@@ -49,6 +49,7 @@
       <div class="text-xs text-gray-500 text-right mt-4">
         Lesson ID: {{ use_case.lesson_id }}, UseCase ID: {{ use_case.id }}
       </div>
+      <div id="use-case-data" data-total-use-cases="{{ total_use_cases }}" data-completed-use-cases="{{ correct_use_cases }}"></div>
     </div>
   </div>
 </div>
@@ -67,37 +68,6 @@
       updateProgressBar();
       updateRemainingUseCases();
 
-      useCaseContainer.addEventListener('submit', async function(event) {
-          event.preventDefault();
-          if (event.target.tagName === 'FORM') {
-              const response = await fetch(event.target.action, {
-                  method: event.target.method,
-                  body: new FormData(event.target)
-              });
-              const responseData = await response.json();
-
-              if (responseData.isCorrect) {
-                  completedUseCases++;
-                  answerFeedback.textContent = 'Correct answer!';
-                  answerFeedback.className = 'bg-green-500 text-center py-2 px-4 rounded text-white';
-              } else {
-                  answerFeedback.textContent = 'Incorrect answer!';
-                  answerFeedback.className = 'bg-red-500 text-center py-2 px-4 rounded text-white';
-              }
-              answerFeedback.classList.remove('hidden');
-              setTimeout(() => answerFeedback.classList.add('hidden'), 3000);
-
-              updateProgressBar();
-              updateRemainingUseCases();
-
-              if (responseData.nextUseCase) {
-                  loadNextUseCase(responseData.nextUseCase);
-              } else {
-                  useCaseContainer.innerHTML = '<p>All use cases completed!</p>';
-              }
-          }
-      });
-
       function updateProgressBar() {
           let progressPercentage = (completedUseCases / totalUseCases) * 100;
           progressBar.style.width = `${progressPercentage}%`;
@@ -110,9 +80,5 @@
       }
   });
 
-  function loadNextUseCase(nextUseCase) {
-      // Implement function to load the next use case details
-      // This could involve updating the inner HTML of useCaseContainer
-  }
 </script>
 {% endblock %}
