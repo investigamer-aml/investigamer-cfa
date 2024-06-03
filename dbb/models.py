@@ -117,6 +117,8 @@ class UseCases(db.Model):
     lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
     questions = db.relationship("Questions", backref="use_case", lazy=True)
     created_by_user = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    # news_article_id = db.Column(db.Integer, db.ForeignKey("news_articles.id"), nullable=False)
+    news_article = db.relationship("NewsArticle", back_populates="use_case")
 
     def __repr__(self):
         """Provide a string representation of the use case."""
@@ -204,3 +206,16 @@ class UserLessonInteraction(db.Model):
     def __repr__(self):
         """Provide a string representation of the interaction."""
         return f"<UserLessonInteraction(user_id={self.user_id}, lesson_id={self.lesson_id}, completed={self.completed})>"
+
+
+class NewsArticle(db.Model):
+    """
+    Represents a news article generated from a use case scenario.
+    """
+
+    __tablename__ = "news_articles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.String, nullable=False)
+    use_case_id = db.Column(db.Integer, db.ForeignKey("use_cases.id"), nullable=False)
+    use_case = db.relationship("UseCases", back_populates="news_articles")

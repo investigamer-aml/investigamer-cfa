@@ -10,3 +10,4 @@ flask_testing
 alembic
 markdown
 python-dotenv
+openai
