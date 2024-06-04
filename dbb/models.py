@@ -81,13 +81,6 @@ class Users(UserMixin, db.Model):
         return check_password_hash(self.hashed_password, password)
 
 
-# class LearningPath(BaseModel):
-#     id: conint(gt=0)
-#     user_id: conint(gt=0)
-#     name: constr(min_length=1)
-#     description: Optional[str] = None
-
-
 class Lessons(db.Model):
     """
     Represents an educational lesson which may contain multiple use cases. Lessons provide structured learning paths.
@@ -118,18 +111,11 @@ class UseCases(db.Model):
     questions = db.relationship("Questions", backref="use_case", lazy=True)
     created_by_user = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
     # news_article_id = db.Column(db.Integer, db.ForeignKey("news_articles.id"), nullable=False)
-    news_article = db.relationship("NewsArticle", back_populates="use_case")
+    news_articles = db.relationship("NewsArticle", back_populates="use_case")
 
     def __repr__(self):
         """Provide a string representation of the use case."""
         return "<UseCase %r>" % self.description
-
-
-# class RiskFactorMatrix(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     factor = db.Column(db.String, nullable=False)
-#     score = db.Column(db.Float, nullable=False)
-#     use_case_id = db.Column(db.Integer, db.ForeignKey("use_cases.id"), nullable=False)
 
 
 class UserAnswers(db.Model):

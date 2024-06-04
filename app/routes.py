@@ -2,17 +2,18 @@ import json
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-import markdown
 from flask import Flask
 from flask import current_app as app
 from flask import jsonify, redirect, render_template, request, session, url_for
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
+from markdown import markdown
 from sqlalchemy.sql import func
 
 from app import db
-from dbb.models import (DifficultyLevel, Lessons, Options, Questions, UseCases,
-                        UserAnswers, UserLessonInteraction, Users)
+from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
+                        Questions, UseCases, UserAnswers,
+                        UserLessonInteraction, Users)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -549,21 +550,17 @@ def get_first_question_of_use_case(use_case_id):
     )
 
 
-# def record_attempt(
-#     user_id, use_case_id, question_id, user_answers, lesson_id, is_correct
-# ):
-#  """Submit answer to db"""
+@app.route("/get-news-article", methods=["GET"])
+def get_news_article():
+    use_case_id = request.args.get("use_case_id")
+    news_article = NewsArticle.query.filter_by(use_case_id=use_case_id).first()
 
-#     attempt = UserAnswers(
-#         user_id=user_id,
-#         use_case_id=use_case_id,
-#         question_id=question_id,
-#         option_id=",".join(user_answers),
-#         lesson_id=lesson_id,
-#         is_correct=is_correct,
-#     )
-#     db.session.add(attempt)
-#     db.session.commit()
+    if use_case_id and news_article:
+        # Convert Markdown content to HTML
+        html_content = markdown(news_article.content)
+        return jsonify(success=True, content=html_content)
+
+    return jsonify(success=False, message="News article not found.")
 
 
 def get_current_use_case(user_id, lesson_id):

@@ -25,10 +25,23 @@
       <div id="remaining-use-cases" class="text-sm mb-4 text-right text-gray-600">
         Remaining use cases: <span id="remaining-count">Calculating...</span>
       </div>
+      <!-- Trigger/Open The Modal -->
+<button id="myBtn">Show News Article</button>
+
+<!-- The Modal -->
+<div id="myModal" class="modal">
+
+  <!-- Modal content -->
+  <div class="modal-content">
+    <span class="close">&times;</span>
+    <p id="news-article-content">Some text in the Modal..</p>
+  </div>
+
+</div>
       <div id="answer-feedback" class="hidden text-center py-2 px-4 rounded bg-red-500 text-white"></div>
       <p id="use-case-description" class="text-lg mb-4 text-gray-700">{{ use_case.description|safe }}</p>
       <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
-        <input type="hidden" name="use_case_id" value="{{ use_case.id }}">
+        <input type="hidden" id="use_case_id" name="use_case_id" value="{{ use_case.id }}">
         <div id="questions-container">
           {% for question in use_case.questions %}
           <div class="mb-6">
@@ -65,6 +78,11 @@
       const answerFeedback = document.getElementById('answer-feedback');
       const useCaseContainer = document.querySelector('.use-case-container');
 
+      // Get the modal
+      var modal = document.getElementById('myModal');
+      var btn = document.getElementById('myBtn');
+      var span = document.getElementsByClassName("close")[0];
+
       updateProgressBar();
       updateRemainingUseCases();
 
@@ -78,6 +96,32 @@
           let remaining = totalUseCases - completedUseCases;
           remainingCount.textContent = remaining;
       }
+
+      btn.onclick = function() {
+        var useCaseId = document.getElementById('use_case_id').value;
+        fetch(`/get-news-article?use_case_id=${useCaseId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('news-article-content').textContent = data.content;
+                    modal.style.display = "block";
+                } else {
+                    alert(data.message);
+                }
+            });
+       };
+
+       span.onclick = function() {
+           modal.style.display = "none";
+       };
+
+           // When the user clicks anywhere outside of the modal, close it
+       window.onclick = function(event) {
+           if (event.target == modal) {
+              modal.style.display = "none";
+       }
+  };
+
   });
 
 </script>
