@@ -26,3 +26,8 @@ yarn-debug.log*
 yarn-error.log*
 *.pyc
 *.mako
+
+# envs
+.env
+*.xlsx
+*.csv
