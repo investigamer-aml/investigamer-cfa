@@ -9,14 +9,15 @@ from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
 from markdown import markdown
 from sqlalchemy.sql import func
-from .use_case import *
-from utils import json_contains
 from views import *
 
 from app import db
 from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
                         Questions, UseCases, UserAnswers,
                         UserLessonInteraction, Users)
+
+from .use_case import *
+from .utils import get_next_lesson
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -50,6 +51,9 @@ def home():
 
 @app.route("/choose-practice", methods=["GET", "POST"])
 def choose_practice():
+    """TODO: Need to be complete. User can choose between KYC or TM
+    paths of learning. Now its fixed and not dynamic
+    """
     if request.method == "POST":
         practice_type = request.form.get("practice_type")
         if practice_type in ["KYC", "TMS"]:
@@ -65,6 +69,7 @@ def choose_practice():
 @app.route("/practice")
 @app.route("/practice/<string:practice_type>")
 def start_lesson(practice_type=None):
+    """Start the lesson with the right use case to a user"""
     if practice_type not in ["KYC", "TM"]:
         return redirect(url_for("choose_practice"))
 
