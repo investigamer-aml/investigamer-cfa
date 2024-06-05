@@ -9,6 +9,9 @@ from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
 from markdown import markdown
 from sqlalchemy.sql import func
+from use_case import *
+from utils import json_contains
+from views import *
 
 from app import db
 from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
@@ -17,87 +20,6 @@ from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-
-##### REGISTRATION #####
-@app.route("/register", methods=["POST"])
-def register():
-    """
-    Handle the user registration process. Collects data from form, validates,
-    creates a new user, and then redirects to the login page.
-    """
-    username = request.form.get("username")
-    email = request.form.get("email")
-    password = request.form.get("password")
-    is_admin = "is_admin" in request.form
-
-    # Check if user already exists
-    user_exists = Users.query.filter(
-        (Users.email == email) | (Users.username == username)
-    ).first()
-    if user_exists:
-        return jsonify({"error": "User already exists"}), 400
-
-    # Create new user
-    new_user = Users(username=username, email=email, is_admin=is_admin)
-    new_user.set_password(password)  # Hash password
-    new_user.is_admin = is_admin  # Setting the is_admin flag based on checkbox
-    db.session.add(new_user)
-    db.session.commit()
-
-    return redirect(url_for("login"))  # Redirect to the login page
-
-
-@app.route("/register", methods=["GET"])
-def show_register():
-    """
-    Display the registration page.
-    """
-    return render_template("register.html")
-
-
-####### LOGIN #######
-@app.route("/login", methods=["POST"])
-def login():
-    """
-    Authenticate the user. If authentication is successful, redirect to the homepage;
-    otherwise, return an error.
-    """
-    if current_user.is_authenticated:
-        return redirect(url_for("home"))  # Redirect to the homepage
-
-    login_input = request.form.get(
-        "login_input"
-    )  # Assuming you change the form to have 'login_input' instead of 'username'
-    password = request.form.get("password")
-
-    # Attempt to authenticate first by username, then by email
-    user = Users.query.filter(
-        (Users.username == login_input) | (Users.email == login_input)
-    ).first()
-
-    if user and user.check_password(password):
-        login_user(user)
-        return redirect(url_for("home"))  # Redirect to the homepage
-    else:
-        return jsonify({"error": "Invalid username or password"}), 401
-
-
-@app.route("/logout")
-def logout():
-    """
-    Log out the current user and redirect to the home page.
-    """
-    logout_user()
-    return redirect(url_for("home"))
-
-
-@app.route("/login", methods=["GET"])
-def show_login():
-    """
-    Display the login page.
-    """
-    return render_template("login.html")
 
 
 @login_manager.user_loader
@@ -230,40 +152,6 @@ def get_users_correct_use_cases_per_lesson(lesson_id, user_id):
     )
 
 
-def json_contains(json_obj, query, threshold=0.75):
-    """Check if json_obj contains at least the threshold percentage of key-value pairs in query."""
-
-    # Flatten the JSON objects for easier comparison
-    def flatten_json(y):
-        out = {}
-
-        def flatten(x, name=""):
-            if type(x) is dict:
-                for a in x:
-                    flatten(x[a], name + a + ".")
-            else:
-                out[name[:-1]] = x
-
-        flatten(y)
-        return out
-
-    flat_json_obj = flatten_json(json_obj)
-    flat_query = flatten_json(query)
-
-    total_keys = len(flat_query)
-    matching_keys = sum(
-        1
-        for key in flat_query
-        if key in flat_json_obj and flat_json_obj[key] == flat_query[key]
-    )
-
-    similarity = matching_keys / total_keys if total_keys > 0 else 0
-    formatted_similarity = f"{similarity:.2%}"
-    app.logger.info(f"Similarity = {formatted_similarity}")
-
-    return similarity >= threshold
-
-
 def find_similar_use_case(current_use_case_id, user_id, lesson_id):
     """
     Finds a use case similar to the current one based on shared risk factors.
@@ -303,112 +191,6 @@ def find_similar_use_case(current_use_case_id, user_id, lesson_id):
             return use_case
 
     return None
-
-
-@app.route("/submit-answer", methods=["POST"])
-def submit_answer():
-    """
-    Process answers submitted by the user for a use case, evaluate correctness, and respond appropriately.
-    """
-    data = request.get_json()
-    app.logger.info(f"Received data: {data}")
-
-    use_case_id = data.get("use_case_id")
-    # lesson_id = 1  current_user.lesson_id
-    answers_data = data.get("answers")
-
-    if not use_case_id or not answers_data:
-        return jsonify({"error": "Missing use case ID or answers data"}), 400
-
-    results = []
-    has_mistake = False
-    for answer in answers_data:
-        question_id = answer.get("questionId")
-        option_id = answer.get("answer")
-
-        if not question_id or not option_id:
-            return jsonify({"error": "Missing question ID or answer option ID"}), 400
-
-        question = Questions.query.get(question_id)
-        option = Options.query.filter_by(id=option_id, question_id=question_id).first()
-
-        if not question or not option:
-            return jsonify({"error": "Question or option not found"}), 404
-
-        if question.use_case_id != int(use_case_id):
-            return (
-                jsonify(
-                    {"error": "Question does not belong to the specified use case"}
-                ),
-                400,
-            )
-
-        is_correct = option.is_correct
-
-        attempt = UserAnswers(
-            user_id=current_user.id,
-            use_case_id=int(use_case_id),
-            question_id=int(question_id),
-            option_id=int(option_id),
-            is_correct=is_correct,
-            lesson_id=current_user.lesson_id,
-        )
-        db.session.add(attempt)
-        results.append({"questionId": question_id, "isCorrect": is_correct})
-
-        if not is_correct:
-            has_mistake = True
-
-    db.session.commit()
-
-    if has_mistake:
-        # Find a similar use case based on risk factors
-        similar_use_case = find_similar_use_case(
-            use_case_id, current_user.id, current_user.lesson_id
-        )
-        if similar_use_case:
-            # Store the similar use case ID in the session or temporary storage
-            session["similar_use_case_id"] = similar_use_case.id
-
-    next_use_case = get_next_use_case(use_case_id)
-    if next_use_case:
-        first_question = get_first_question_of_use_case(next_use_case.id)
-        next_use_case_data = {
-            "useCaseId": next_use_case.id,
-            "description": next_use_case.description,
-            "firstQuestion": prepare_first_question_data(first_question),
-        }
-        return (
-            jsonify(
-                {
-                    "message": "Answer submitted successfully",
-                    "isCorrect": is_correct,
-                    "nextUseCase": next_use_case_data,
-                }
-            ),
-            200,
-        )
-    else:
-        return jsonify({"message": "No more use cases"}), 200
-
-
-@app.route("/admin")
-@login_required
-def admin():
-    """
-    Display the admin page with a list of use cases created by the current logged-in user, filtered by type.
-    """
-    # Retrieve a type filter from query parameters (if any)
-    type_filter = request.args.get("type")
-
-    if type_filter:
-        use_cases = UseCases.query.filter_by(
-            created_by_user=current_user.id, type=type_filter
-        ).all()
-    else:
-        use_cases = UseCases.query.filter_by(created_by_user=current_user.id).all()
-
-    return render_template("admin.html", use_cases=use_cases)
 
 
 @app.route("/use-case/new", methods=["GET", "POST"])
@@ -552,6 +334,7 @@ def get_first_question_of_use_case(use_case_id):
 
 @app.route("/get-news-article", methods=["GET"])
 def get_news_article():
+    """Get the news article by filtering with the current use case id"""
     use_case_id = request.args.get("use_case_id")
     news_article = NewsArticle.query.filter_by(use_case_id=use_case_id).first()
 
@@ -580,7 +363,7 @@ def get_current_use_case(user_id, lesson_id):
         .filter(
             UserAnswers.user_id == user_id,
             UserAnswers.lesson_id == lesson_id,
-            UserAnswers.is_correct == True,
+            UserAnswers.is_correct,
         )
         .distinct()
         .subquery()
@@ -695,7 +478,7 @@ def get_current_lesson(user_id):
         db.session.query(
             UserAnswers.lesson_id, func.count(UserAnswers.id).label("correct_count")
         )
-        .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct == True)
+        .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct)
         .group_by(UserAnswers.lesson_id)
         .subquery()
     )
@@ -732,7 +515,7 @@ def get_current_lesson(user_id):
             completed_lessons_subquery,
             Lessons.id == completed_lessons_subquery.c.lesson_id,
         )
-        .filter(completed_lessons_subquery.c.lesson_id == None)
+        .filter(completed_lessons_subquery.c.lesson_id is None)
         .order_by(Lessons.id)
         .first()
     )
@@ -744,31 +527,31 @@ def get_current_lesson(user_id):
     return None
 
 
-def update_lesson_progress(user_id, lesson_id, progress, score=None):
-    interaction = UserLessonInteraction.query.filter_by(
-        user_id=user_id, lesson_id=lesson_id
-    ).first()
-    if interaction:
-        interaction.progress = progress
-        interaction.last_accessed = datetime.utcnow()
-        if progress >= 100:
-            interaction.completed = True
-            interaction.completion_date = datetime.utcnow()
-            interaction.score = score
-    else:
-        interaction = UserLessonInteraction(
-            user_id=user_id,
-            lesson_id=lesson_id,
-            progress=progress,
-            last_accessed=datetime.utcnow(),
-            completed=progress >= 100,
-            completion_date=datetime.utcnow() if progress >= 100 else None,
-            score=score if progress >= 100 else None,
-        )
-        db.session.add(interaction)
-    db.session.commit()
+# def update_lesson_progress(user_id, lesson_id, progress, score=None):
+#     interaction = UserLessonInteraction.query.filter_by(
+#         user_id=user_id, lesson_id=lesson_id
+#     ).first()
+#     if interaction:
+#         interaction.progress = progress
+#         interaction.last_accessed = datetime.utcnow()
+#         if progress >= 100:
+#             interaction.completed = True
+#             interaction.completion_date = datetime.utcnow()
+#             interaction.score = score
+#     else:
+#         interaction = UserLessonInteraction(
+#             user_id=user_id,
+#             lesson_id=lesson_id,
+#             progress=progress,
+#             last_accessed=datetime.utcnow(),
+#             completed=progress >= 100,
+#             completion_date=datetime.utcnow() if progress >= 100 else None,
+#             score=score if progress >= 100 else None,
+#         )
+#         db.session.add(interaction)
+#     db.session.commit()
 
-    return interaction
+#     return interaction
 
 
 def get_next_lesson(user_id: int) -> Dict[str, Any]:
