@@ -6,9 +6,8 @@ from flask import current_app as app
 from flask import jsonify, render_template, request, session
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
-from routes import *
-from routes import (find_similar_use_case, get_first_question_of_use_case,
-                    get_next_use_case, prepare_first_question_data)
+
+from .utils import find_similar_use_case, get_first_question_of_use_case, get_next_use_case, prepare_first_question_data
 
 from app import db
 from dbb.models import Options, Questions, UseCases, UserAnswers
