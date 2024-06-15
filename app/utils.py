@@ -1,7 +1,12 @@
 """ Module to store all small utility helper functions
 """
+from typing import Any, Dict, Optional
+
 from flask import current_app as app
+from flask import session
+from flask_login import current_user
 from werkzeug.security import generate_password_hash
+
 from app import db
 from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
                         Questions, UseCases, UserAnswers,
@@ -47,6 +52,7 @@ def json_contains(json_obj, query, threshold=0.75):
     app.logger.info(f"Similarity = {formatted_similarity}")
 
     return similarity >= threshold
+
 
 def find_similar_use_case(current_use_case_id, user_id, lesson_id):
     """
@@ -132,6 +138,7 @@ def get_next_lesson(user_id: int) -> Dict[str, Any]:
 
         return lesson_data
     return None
+
 
 def get_first_question_of_use_case(use_case_id):
     """

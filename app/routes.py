@@ -8,8 +8,7 @@ from flask import jsonify, redirect, render_template, request, session, url_for
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
 from markdown import markdown
-from sqlalchemy.sql import func
-from views import *
+from sqlalchemy.sql import func, or_, select
 
 from app import db
 from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
@@ -18,6 +17,7 @@ from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
 
 from .use_case import *
 from .utils import get_next_lesson
+from .views import *
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -65,7 +65,7 @@ def choose_practice():
 
 
 # Define your models based on the provided schema
-@app.route("/practice/<int:lesson_id>")
+# @app.route("/practice/<int:lesson_id>")
 @app.route("/practice")
 @app.route("/practice/<string:practice_type>")
 def start_lesson(practice_type=None):
@@ -75,8 +75,12 @@ def start_lesson(practice_type=None):
 
     user_id = current_user.id
 
+    print(f"Current User: {user_id}\n")
+
     # Check if there is a similar use case ID stored in the session
     similar_use_case_id = session.get("similar_use_case_id")
+
+    print(f"There is a similar use case {similar_use_case_id}\n")
     if similar_use_case_id:
         # Retrieve the similar use case from the database
         use_case = UseCases.query.get(similar_use_case_id)
@@ -86,6 +90,7 @@ def start_lesson(practice_type=None):
             is_similar_use_case = True
     else:
         current_lesson = get_current_lesson(user_id)
+        print(f"Current Lesson = {current_lesson}\n")
         if current_lesson:
             current_use_case = get_current_use_case(user_id, current_lesson["id"])
             total_use_cases = get_lessons_use_case_count(current_lesson["id"])
@@ -319,7 +324,7 @@ def get_current_use_case(user_id, lesson_id):
     # Find the first uncompleted use case in the current lesson
     current_use_case = (
         UseCases.query.filter_by(lesson_id=lesson_id)
-        .filter(~UseCases.id.in_(completed_use_cases))
+        .filter(~UseCases.id.in_(select(completed_use_cases)))
         .order_by(UseCases.id)
         .first()
     )
@@ -328,19 +333,20 @@ def get_current_use_case(user_id, lesson_id):
 
 
 def get_current_lesson(user_id):
-    """Fetch the current lesson the user is on.
+    """Fetch the current lesson the user is on based on their progress.
 
-    Input:
-    - user_id (int) -> user identifier
+    Args:
+    - user_id (int): User identifier
 
-    Output:
-    - lesson_id (int) -> lesson identifier
+    Returns:
+    - Dictionary with lesson ID and title or None if no lessons are found
     """
 
     # Subquery to get the number of correct answers per lesson for the user
     correct_answers_subquery = (
         db.session.query(
-            UserAnswers.lesson_id, func.count(UserAnswers.id).label("correct_count")
+            UserAnswers.lesson_id.label("lesson_id"),
+            func.count(UserAnswers.id).label("correct_count"),
         )
         .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct)
         .group_by(UserAnswers.lesson_id)
@@ -350,7 +356,8 @@ def get_current_lesson(user_id):
     # Subquery to get the total number of questions per lesson
     total_questions_subquery = (
         db.session.query(
-            UseCases.lesson_id, func.count(Questions.id).label("total_questions")
+            UseCases.lesson_id.label("lesson_id"),
+            func.count(Questions.id).label("total_questions"),
         )
         .join(Questions, UseCases.id == Questions.use_case_id)
         .group_by(UseCases.lesson_id)
@@ -372,20 +379,24 @@ def get_current_lesson(user_id):
         .subquery()
     )
 
-    # Find the first lesson that the user hasn't completed correctly
+    # Find the first lesson that the user hasn't completed correctly or hasn't attempted
     current_lesson = (
         db.session.query(Lessons)
         .outerjoin(
             completed_lessons_subquery,
             Lessons.id == completed_lessons_subquery.c.lesson_id,
         )
-        .filter(completed_lessons_subquery.c.lesson_id is None)
+        .filter(
+            or_(
+                completed_lessons_subquery.c.lesson_id == None,
+                Lessons.id.notin_(select(completed_lessons_subquery)),
+            )
+        )
         .order_by(Lessons.id)
         .first()
     )
 
     if current_lesson:
-        print(current_lesson)
         return {"id": current_lesson.id, "title": current_lesson.title}
 
     return None
