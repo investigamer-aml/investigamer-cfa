@@ -27,6 +27,40 @@ header {
     align-items: center;
 }
 
+@media (max-width: 600px) {
+    h1 {
+        font-size: 24px; /* Smaller size for mobile devices */
+    }
+}
+
+h1 {
+    font-size: 28px; /* Example size, adjust as needed */
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+h2 {
+    font-size: 20px; /* Example size, adjust as needed */
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+h3, h4, h5, h6 {
+    font-weight: bold;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+strong {
+    font-weight: bold;
+}
+
+p {
+    margin-bottom: 10px;
+}
+
 nav a {
     text-decoration: none;
     color: #ffffff;
