@@ -6,6 +6,8 @@ from flask import current_app as app
 from flask import session
 from flask_login import current_user
 from werkzeug.security import generate_password_hash
+from markupsafe import Markup
+from markdown import markdown
 
 from app import db
 from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
@@ -238,3 +240,32 @@ def prepare_first_question_data(first_question):
     }
 
     return question_data
+
+def render_markdown(content):
+    """Convert Markdown formatted text to HTML"""
+    html = markdown(content)
+    return Markup(html)
+
+# import bleach
+
+# # Define allowed tags and attributes
+# allowed_tags = ['p', 'strong', 'em', 'ul', 'ol', 'li', 'a']
+# allowed_attrs = {'a': ['href', 'title']}
+
+# @app.route("/practice/<string:practice_type>")
+# def start_lesson(practice_type=None):
+#     # Your existing code
+#     ...
+#     if use_case:
+#         # Sanitize HTML
+#         safe_html = bleach.clean(use_case.description, tags=allowed_tags, attributes=allowed_attrs, strip=True)
+#         use_case_data['description'] = Markup(safe_html)
+#     ...
+
+#     return render_template(
+#         "practice.html",
+#         use_case=use_case_data,
+#         is_similar_use_case=is_similar_use_case,
+#         total_use_cases=total_use_cases,
+#         correct_use_cases=correct_use_cases,
+#     )

@@ -3,19 +3,18 @@
 
 from flask import Blueprint
 from flask import current_app as app
-from flask import jsonify, render_template, request, session
-from flask_login import (LoginManager, UserMixin, current_user, login_required,
-                         login_user, logout_user)
+from flask import jsonify, request, session
+from flask_login import (current_user, login_required)
 
 from .utils import find_similar_use_case, get_first_question_of_use_case, get_next_use_case, prepare_first_question_data
 
 from app import db
-from dbb.models import Options, Questions, UseCases, UserAnswers
+from dbb.models import Options, Questions, UserAnswers
 
 use_case_bp = Blueprint("use_case", __name__)
 
-
-@app.route("/submit-answer", methods=["POST"])
+@use_case_bp.route("/submit-answer", methods=["POST"])
+@login_required
 def submit_answer():
     """
     Process answers submitted by the user for a use case, evaluate correctness, and respond appropriately.
