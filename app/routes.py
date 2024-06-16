@@ -2,12 +2,10 @@ import json
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from flask import Flask
 from flask import current_app as app
 from flask import jsonify, redirect, render_template, request, session, url_for
-from flask_login import (LoginManager, UserMixin, current_user, login_required,
-                         login_user, logout_user)
-from markdown import markdown
+from flask_login import LoginManager, current_user, login_required
+from markupsafe import Markup
 from sqlalchemy.sql import func, or_, select
 
 from app import db
@@ -16,7 +14,7 @@ from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
                         UserLessonInteraction, Users)
 
 from .use_case import *
-from .utils import get_next_lesson
+from .utils import get_next_lesson, render_markdown
 from .views import *
 
 login_manager = LoginManager()
@@ -74,14 +72,13 @@ def start_lesson(practice_type=None):
         return redirect(url_for("choose_practice"))
 
     user_id = current_user.id
-
-    print(f"Current User: {user_id}\n")
+    app.logger.info(f"Current User: {user_id}")
 
     # Check if there is a similar use case ID stored in the session
     similar_use_case_id = session.get("similar_use_case_id")
 
-    print(f"There is a similar use case {similar_use_case_id}\n")
     if similar_use_case_id:
+        app.logger.info(f"There is a similar use case: {similar_use_case_id}")
         # Retrieve the similar use case from the database
         use_case = UseCases.query.get(similar_use_case_id)
         if use_case:
@@ -90,9 +87,11 @@ def start_lesson(practice_type=None):
             is_similar_use_case = True
     else:
         current_lesson = get_current_lesson(user_id)
-        print(f"Current Lesson = {current_lesson}\n")
+        app.logger.info(f"Current Lesson = {current_lesson}\n")
         if current_lesson:
             current_use_case = get_current_use_case(user_id, current_lesson["id"])
+            app.logger.info(f"get_current_use_case yielded: {current_use_case}")
+
             total_use_cases = get_lessons_use_case_count(current_lesson["id"])
             correct_use_cases = get_users_correct_use_cases_per_lesson(
                 current_lesson["id"], user_id
@@ -105,10 +104,14 @@ def start_lesson(practice_type=None):
                 # Move on to the next lesson
                 next_lesson = get_next_lesson(user_id)
                 if next_lesson:
+                    update_lesson_progress(
+                        user_id, next_lesson["id"], 0
+                    )  # Starting new lesson
                     use_case = next_lesson["use_cases"][
                         0
                     ]  # Retrieve the first use case of the next lesson
                     is_similar_use_case = False
+                    app.logger.info(f"Use Case is: {use_case}")
                 else:
                     # No more lessons or use cases
                     return "Congratulations! You have completed all the lessons."
@@ -134,6 +137,9 @@ def start_lesson(practice_type=None):
             for question in use_case.questions
         ],
     }
+
+    html_description = render_markdown(use_case.description)
+    use_case_data["description"] = Markup(html_description)
 
     return render_template(
         "practice.html",
@@ -214,7 +220,6 @@ def new_use_case():
     # Assuming you have lists of lessons and difficulty levels to populate the form selections
     lessons = Lessons.query.all()
     difficulty_levels = DifficultyLevel.query.all()
-    print(difficulty_levels)
     return render_template(
         "create_use_case.html", difficulty_levels=difficulty_levels, lessons=lessons
     )
@@ -292,7 +297,7 @@ def get_news_article():
 
     if use_case_id and news_article:
         # Convert Markdown content to HTML
-        html_content = markdown(news_article.content)
+        html_content = render_markdown(news_article.content)
         return jsonify(success=True, content=html_content)
 
     return jsonify(success=False, message="News article not found.")
@@ -402,28 +407,34 @@ def get_current_lesson(user_id):
     return None
 
 
-# def update_lesson_progress(user_id, lesson_id, progress, score=None):
-#     interaction = UserLessonInteraction.query.filter_by(
-#         user_id=user_id, lesson_id=lesson_id
-#     ).first()
-#     if interaction:
-#         interaction.progress = progress
-#         interaction.last_accessed = datetime.utcnow()
-#         if progress >= 100:
-#             interaction.completed = True
-#             interaction.completion_date = datetime.utcnow()
-#             interaction.score = score
-#     else:
-#         interaction = UserLessonInteraction(
-#             user_id=user_id,
-#             lesson_id=lesson_id,
-#             progress=progress,
-#             last_accessed=datetime.utcnow(),
-#             completed=progress >= 100,
-#             completion_date=datetime.utcnow() if progress >= 100 else None,
-#             score=score if progress >= 100 else None,
-#         )
-#         db.session.add(interaction)
-#     db.session.commit()
+def calculate_progress(lesson_id, user_id):
+    total_use_cases = get_lessons_use_case_count(lesson_id)
+    completed_use_cases = get_users_correct_use_cases_per_lesson(lesson_id, user_id)
+    return (completed_use_cases / total_use_cases) * 100
 
-#     return interaction
+
+def update_lesson_progress(user_id, lesson_id, progress, score=None):
+    interaction = UserLessonInteraction.query.filter_by(
+        user_id=user_id, lesson_id=lesson_id
+    ).first()
+    if interaction:
+        interaction.progress = progress
+        interaction.last_accessed = datetime.utcnow()
+        if progress >= 100:
+            interaction.completed = True
+            interaction.completion_date = datetime.utcnow()
+            interaction.score = score
+    else:
+        interaction = UserLessonInteraction(
+            user_id=user_id,
+            lesson_id=lesson_id,
+            progress=progress,
+            last_accessed=datetime.utcnow(),
+            completed=progress >= 100,
+            completion_date=datetime.utcnow() if progress >= 100 else None,
+            score=score if progress >= 100 else None,
+        )
+        db.session.add(interaction)
+    db.session.commit()
+
+    return interaction
