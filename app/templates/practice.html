@@ -29,7 +29,7 @@
 <button id="myBtn">Show News Article</button>
 
 <!-- The Modal -->
-<div id="myModal" class="modal">
+<div id="NewsArticleModal" class="modal">
 
   <!-- Modal content -->
   <div class="modal-content">
@@ -79,7 +79,7 @@
       const useCaseContainer = document.querySelector('.use-case-container');
 
       // Get the modal
-      var modal = document.getElementById('myModal');
+      var modal = document.getElementById('NewsArticleModal');
       var btn = document.getElementById('myBtn');
       var span = document.getElementsByClassName("close")[0];
 
@@ -103,7 +103,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    document.getElementById('news-article-content').textContent = data.content;
+                    document.getElementById('news-article-content').innerHTML = data.content;
                     modal.style.display = "block";
                 } else {
                     alert(data.message);
