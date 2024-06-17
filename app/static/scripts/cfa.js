@@ -99,11 +99,11 @@ document.addEventListener('DOMContentLoaded', function() {
       if (isCorrect) {
         feedback.textContent = 'Correct answer!';
         feedback.className = 'bg-green-500 text-center py-2 px-4 rounded text-white';
-        playSound('correct.mp3'); // Assuming you have this audio file
+        playSound('sounds/correct.mp3'); // Assuming you have this audio file
       } else {
         feedback.textContent = message || 'Incorrect answer!';
         feedback.className = 'bg-red-500 text-center py-2 px-4 rounded text-white';
-        playSound('wrong.mp3'); // Assuming you have this audio file
+        playSound('sounds/wrong.mp3'); // Assuming you have this audio file
       }
       feedback.classList.remove('hidden');
       setTimeout(() => feedback.classList.add('hidden'), 3000);

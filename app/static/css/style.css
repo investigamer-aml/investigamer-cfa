@@ -15,6 +15,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    height: 100%,
     background-color: var(--background-color);
     color: var(--text-color);
 }
@@ -193,3 +194,60 @@ input[type="radio"]:checked {
     text-decoration: none;
     cursor: pointer;
   }
+
+/* Sidebar container */
+
+/* Sidebar container */
+.sidebar {
+    height: 100vh;
+    width: 250px; /* Adjusted width */
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    background-color: var(--primary-color);
+    overflow-x: hidden;
+    transition: width 0.5s;
+    padding-top: 60px;
+}
+
+/* Sidebar links */
+.sidebar a {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 16px; /* Smaller font size */
+    color: white;
+    display: block;
+}
+
+/* Button to open/close sidebar */
+.sidebar-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px; /* Changed to left for consistency */
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+}
+
+/* Main content style adjustment */
+.main-content {
+    transition: margin-left 0.5s;
+    margin-left: 250px; /* Push content to the right */
+    padding: 20px;
+}
+
+/* Adjust main content margin when sidebar is toggled */
+.main-content.shifted {
+    margin-left: 0;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 0; /* Hide sidebar on small devices */
+    }
+
+    .main-content {
+        margin-left: 0; /* Full width content on small devices */
+    }
+}
