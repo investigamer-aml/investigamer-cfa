@@ -82,56 +82,48 @@
 <script>
 
   document.addEventListener('DOMContentLoaded', function() {
-      let totalUseCases = {{ total_use_cases }};
-      let completedUseCases = {{ correct_use_cases }};
+    const totalUseCases = {{ total_use_cases }};
+    const completedUseCases = {{ correct_use_cases }};
+    const progressBar = document.getElementById('progress-bar');
+    const remainingCount = document.getElementById('remaining-count');
+    const sidebar = document.getElementById('mySidebar');
+    const mainContent = document.getElementById('main');
+    const modal = document.getElementById('NewsArticleModal');
+    const btn = document.getElementById('myBtn');
+    const span = document.getElementsByClassName("close")[0];
+    const toggleBtn = document.querySelector('.sidebar-btn');
 
-      const progressBar = document.getElementById('progress-bar');
-      const remainingCount = document.getElementById('remaining-count');
-      const answerFeedback = document.getElementById('answer-feedback');
-      const useCaseContainer = document.querySelector('.use-case-container');
+    // Updates the UI components initially
+    updateProgressBar();
+    updateRemainingUseCases();
+    toggleSidebarStyle(); // Consider if initial call is really needed, might be redundant
 
-      const sidebar = document.getElementById('mySidebar');
-      const mainContent = document.getElementById('main');
-      const toggleBtn = document.querySelector('.sidebar-btn');
-
-      toggleBtn.onclick = function() {
-        const isOpen = sidebar.style.width === '25%';
-        sidebar.style.width = isOpen ? '0' : '25%';
-        mainContent.style.marginRight = isOpen ? '0' : '25%';
+    document.querySelector('.sidebar-btn').onclick = function() {
+        toggleSidebarStyle(sidebar.style.width !== '250px');
     };
 
-      window.toggleSidebar = function() {
-        if (sidebar.style.width === '250px') {
-            sidebar.style.width = '0';
-            mainContent.style.marginRight = '0';
-        } else {
-            sidebar.style.width = '250px';
-            mainContent.style.marginRight = '250px';
-        }
-      };
+    function toggleSidebarStyle(open) {
+        const width = open ? '250px' : '0';
+        sidebar.style.width = width;
+        mainContent.style.marginRight = width;
+    }
 
-      // Get the modal
-      var modal = document.getElementById('NewsArticleModal');
-      var btn = document.getElementById('myBtn');
-      var span = document.getElementsByClassName("close")[0];
+    window.toggleSidebar = function() {
+        toggleSidebarStyle(sidebar.style.width === '0');
+    };
 
-      updateProgressBar();
-      updateRemainingUseCases();
-      toggleSidebar();
+    function updateProgressBar() {
+        const progressPercentage = (completedUseCases / totalUseCases) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+        progressBar.textContent = `${progressPercentage.toFixed(0)}%`;
+    }
 
-      function updateProgressBar() {
-          let progressPercentage = (completedUseCases / totalUseCases) * 100;
-          progressBar.style.width = `${progressPercentage}%`;
-          progressBar.textContent = `${progressPercentage.toFixed(0)}%`;
-      }
+    function updateRemainingUseCases() {
+        remainingCount.textContent = totalUseCases - completedUseCases;
+    }
 
-      function updateRemainingUseCases() {
-          let remaining = totalUseCases - completedUseCases;
-          remainingCount.textContent = remaining;
-      }
-
-      btn.onclick = function() {
-        var useCaseId = document.getElementById('use_case_id').value;
+    btn.onclick = function() {
+        const useCaseId = document.getElementById('use_case_id').value;
         fetch(`/get-news-article?use_case_id=${useCaseId}`)
             .then(response => response.json())
             .then(data => {
@@ -142,20 +134,25 @@
                     alert(data.message);
                 }
             });
-       };
+    };
 
-       span.onclick = function() {
-           modal.style.display = "none";
-       };
+    span.onclick = function() {
+        modal.style.display = "none";
+    };
 
-           // When the user clicks anywhere outside of the modal, close it
-       window.onclick = function(event) {
-           if (event.target == modal) {
-              modal.style.display = "none";
-       }
-  };
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    };
 
-  });
+    toggleBtn.onclick = function() {
+        const isOpen = sidebar.style.width === '25%';
+        sidebar.style.width = isOpen ? '0' : '25%';
+        mainContent.style.marginRight = isOpen ? '0' : '25%';
+    };
+
+});
 
 </script>
 {% endblock %}
