@@ -2,84 +2,75 @@
 {% block title %}Investigamer - Practice{% endblock %}
 {% block content %}
 
-
 <div id="mySidebar" class="sidebar">
   <a href="javascript:void(0)" class="sidebar-btn">&#9776; Toggle Sidebar</a>
-  <a href="#" id="myBtn">Show News Article</a>
+  <a href="#" id="modalButton">Show News Article</a>
 </div>
-
 
 <div id='main' class="main-content">
-<div class="container mx-auto py-8 px-4">
+  <div class="container mx-auto py-8 px-4">
+    <div class="bg-white shadow-md rounded-lg p-6">
+      <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-  <div class="bg-white shadow-md rounded-lg p-6">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-
-    <!-- Standalone lesson title for clear visibility and focus -->
-    <div class="text-center">
-      <h1 class="text-4xl font-bold mb-2 text-teal-800">{{ use_case.lesson_title }}</h1>
-      <h2 class="text-2xl font-bold mb-4 text-teal-600">Practice Session</h2>
-    </div>
-
-    {% if is_similar_use_case %}
-    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
-      <p class="font-bold">Heads Up! Similar Use Case Ahead</p>
-      <p>This is your chance to correct a previous mistake. Practice makes perfect!</p>
-    </div>
-    {% endif %}
-
-    <div class="use-case-container bg-gray-100 rounded-lg p-6 shadow-inner">
-      <div id="progress-bar-container" class="mb-6">
-        <div id="progress-bar" class="bg-green-500 text-xs font-medium text-white text-center py-1 rounded-full" style="width: 0%">0%</div>
-      </div>
-      <div id="remaining-use-cases" class="text-sm mb-4 text-right text-gray-600">
-        Remaining use cases: <span id="remaining-count">Calculating...</span>
+      <div class="text-center">
+        <h1 class="text-4xl font-bold mb-2 text-teal-800">{{ use_case.lesson_title }}</h1>
+        <h2 class="text-2xl font-bold mb-4 text-teal-600">Practice Session</h2>
       </div>
 
-<!-- The Modal -->
-<div id="NewsArticleModal" class="modal">
+      {% if is_similar_use_case %}
+      <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-4" role="alert">
+        <p class="font-bold">Heads Up! Similar Use Case Ahead</p>
+        <p>This is your chance to correct a previous mistake. Practice makes perfect!</p>
+      </div>
+      {% endif %}
 
-  <!-- Modal content -->
-  <div class="modal-content">
-    <span class="close">&times;</span>
-    <p id="news-article-content">Some text in the Modal..</p>
-  </div>
+      <div class="use-case-container bg-gray-100 rounded-lg p-6 shadow-inner">
+        <div id="progress-bar-container" class="mb-6">
+          <div id="progress-bar" class="bg-green-500 text-xs font-medium text-white text-center py-1 rounded-full" style="width: 0%">0%</div>
+        </div>
+        <div id="remaining-use-cases" class="text-sm mb-4 text-right text-gray-600">
+          Remaining use cases: <span id="remaining-count">Calculating...</span>
+        </div>
 
-</div>
-      <div id="answer-feedback" class="hidden text-center py-2 px-4 rounded bg-red-500 text-white"></div>
-      <p id="use-case-description" class="text-lg mb-4 text-gray-700">{{ use_case.description|safe }}</p>
-      <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
-        <input type="hidden" id="use_case_id" name="use_case_id" value="{{ use_case.id }}">
-        <div id="questions-container">
-          {% for question in use_case.questions %}
-          <div class="mb-6">
-            <p class="font-bold mb-2 text-gray-700">{{ question.text }}</p>
-            {% for option in question.options %}
-            <label class="block mb-2 cursor-pointer">
-              <input type="radio" name="answer[{{ question.id }}]" value="{{ option.id }}" class="mr-2 leading-tight">
-              {{ option.text }}
-            </label>
+        <div id="NewsArticleModal" class="modal">
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="news-article-content">Some text in the Modal..</p>
+          </div>
+        </div>
+
+        <div id="answer-feedback" class="hidden text-center py-2 px-4 rounded bg-red-500 text-white"></div>
+        <p id="use-case-description" class="text-lg mb-4 text-gray-700">{{ use_case.description|safe }}</p>
+        <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
+          <input type="hidden" id="use_case_id" name="use_case_id" value="{{ use_case.id }}">
+          <div id="questions-container">
+            {% for question in use_case.questions %}
+            <div class="mb-6">
+              <p class="font-bold mb-2 text-gray-700">{{ question.text }}</p>
+              {% for option in question.options %}
+              <label class="block mb-2 cursor-pointer">
+                <input type="radio" name="answer[{{ question.id }}]" value="{{ option.id }}" class="mr-2 leading-tight">
+                {{ option.text }}
+              </label>
+              {% endfor %}
+            </div>
             {% endfor %}
           </div>
-          {% endfor %}
+          <button type="submit" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-full mt-4">
+            Submit Answer
+          </button>
+        </form>
+        <div class="text-xs text-gray-500 text-right mt-4">
+          Lesson ID: {{ use_case.lesson_id }}, UseCase ID: {{ use_case.id }}
         </div>
-        <button type="submit" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-full mt-4">
-          Submit Answer
-        </button>
-      </form>
-      <div class="text-xs text-gray-500 text-right mt-4">
-        Lesson ID: {{ use_case.lesson_id }}, UseCase ID: {{ use_case.id }}
+        <div id="use-case-data" data-total-use-cases="{{ total_use_cases }}" data-completed-use-cases="{{ correct_use_cases }}"></div>
       </div>
-      <div id="use-case-data" data-total-use-cases="{{ total_use_cases }}" data-completed-use-cases="{{ correct_use_cases }}"></div>
     </div>
   </div>
-</div>
 </div>
 
 <script type="module" src="/static/scripts/sidebarControl.js"></script>
 <script type="module" src="/static/scripts/modalControl.js"></script>
 <script type="module" src="/static/scripts/questionControl.js"></script>
 <script type="module" src="/static/scripts/cfaControl.js"></script>
-
-<!-- </script> -->
 {% endblock %}

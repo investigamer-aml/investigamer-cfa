@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('NewsArticleModal');
-    const btn = document.getElementById('myBtn');
+    const btn = document.getElementById('modalButton');
     const span = document.getElementsByClassName("close")[0];
 
     btn.onclick = function() {
