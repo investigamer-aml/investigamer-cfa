@@ -35,8 +35,6 @@
       <div id="remaining-use-cases" class="text-sm mb-4 text-right text-gray-600">
         Remaining use cases: <span id="remaining-count">Calculating...</span>
       </div>
-      <!-- Trigger/Open The Modal -->
-<!-- <button id="myBtn">Show News Article</button> -->
 
 <!-- The Modal -->
 <div id="NewsArticleModal" class="modal">
@@ -78,87 +76,10 @@
 </div>
 </div>
 
-<script src="/static/scripts/utils.js"></script>
-<script src="/static/scripts/sidebarControl.js"></script>
-<script src="/static/scripts/modalControl.js"></script>
-<script src="/static/scripts/questionControl.js"></script>
-<script src="/static/scripts/cfaControl.js"></script>
-<!-- <script src="{{ url_for('static', filename='scripts/cfa.js') }}"></script> -->
-
-<!-- <script>
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const totalUseCases = {{ total_use_cases }};
-    const completedUseCases = {{ correct_use_cases }};
-    const progressBar = document.getElementById('progress-bar');
-    const remainingCount = document.getElementById('remaining-count');
-    const sidebar = document.getElementById('mySidebar');
-    const mainContent = document.getElementById('main');
-    const modal = document.getElementById('NewsArticleModal');
-    const btn = document.getElementById('myBtn');
-    const span = document.getElementsByClassName("close")[0];
-    const toggleBtn = document.querySelector('.sidebar-btn');
-
-    // Updates the UI components initially
-    updateProgressBar();
-    updateRemainingUseCases();
-    toggleSidebarStyle(); // Consider if initial call is really needed, might be redundant
-
-    document.querySelector('.sidebar-btn').onclick = function() {
-        toggleSidebarStyle(sidebar.style.width !== '250px');
-    };
-
-    function toggleSidebarStyle(open) {
-        const width = open ? '250px' : '0';
-        sidebar.style.width = width;
-        mainContent.style.marginRight = width;
-    }
-
-    window.toggleSidebar = function() {
-        toggleSidebarStyle(sidebar.style.width === '0');
-    };
-
-    function updateProgressBar() {
-        const progressPercentage = (completedUseCases / totalUseCases) * 100;
-        progressBar.style.width = `${progressPercentage}%`;
-        progressBar.textContent = `${progressPercentage.toFixed(0)}%`;
-    }
-
-    function updateRemainingUseCases() {
-        remainingCount.textContent = totalUseCases - completedUseCases;
-    }
-
-    btn.onclick = function() {
-        const useCaseId = document.getElementById('use_case_id').value;
-        fetch(`/get-news-article?use_case_id=${useCaseId}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('news-article-content').innerHTML = data.content;
-                    modal.style.display = "block";
-                } else {
-                    alert(data.message);
-                }
-            });
-    };
-
-    span.onclick = function() {
-        modal.style.display = "none";
-    };
-
-    window.onclick = function(event) {
-        if (event.target === modal) {
-            modal.style.display = "none";
-        }
-    };
-
-    toggleBtn.onclick = function() {
-        const isOpen = sidebar.style.width === '25%';
-        sidebar.style.width = isOpen ? '0' : '25%';
-        mainContent.style.marginRight = isOpen ? '0' : '25%';
-    };
-
-}); -->
+<script type="module" src="/static/scripts/sidebarControl.js"></script>
+<script type="module" src="/static/scripts/modalControl.js"></script>
+<script type="module" src="/static/scripts/questionControl.js"></script>
+<script type="module" src="/static/scripts/cfaControl.js"></script>
 
 <!-- </script> -->
 {% endblock %}

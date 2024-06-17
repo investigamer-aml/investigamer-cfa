@@ -1,4 +1,4 @@
-function generateQuestionHTML(question) {
+export function generateQuestionHTML(question) {
     if (!question) return '';
     return `
       <div class="mb-6">

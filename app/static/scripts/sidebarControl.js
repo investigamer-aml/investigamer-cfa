@@ -1,13 +1,7 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.getElementById('mySidebar');
-    const mainContent = document.getElementById('main');
-    const toggleBtn = document.querySelector('.sidebar-btn');
+import { toggleSidebarStyle } from './utils.js';
 
-    function toggleSidebarStyle(open) {
-        const width = open ? '250px' : '0';
-        sidebar.style.width = width;
-        mainContent.style.marginRight = width;
-    }
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.querySelector('.sidebar-btn');
 
     toggleBtn.onclick = function() {
         const isOpen = sidebar.style.width === '250px';

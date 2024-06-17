@@ -1,8 +1,14 @@
+import { updateProgressBar, updateRemainingUseCases } from './utils.js';
+import { generateQuestionHTML } from './questionControl.js';
+
 document.addEventListener('DOMContentLoaded', function() {
     const useCaseContainer = document.querySelector('.use-case-container');
     const useCaseDataElement = document.querySelector('#use-case-data');
     let totalUseCases = parseInt(useCaseDataElement.dataset.totalUseCases, 10);
     let completedUseCases = parseInt(useCaseDataElement.dataset.completedUseCases, 10);
+
+    updateProgressBar(totalUseCases, completedUseCases);
+    updateRemainingUseCases(totalUseCases, completedUseCases);
 
     useCaseContainer.addEventListener('submit', async function(event) {
         if (event.target.tagName === 'FORM') {
@@ -30,8 +36,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (response.ok && responseData.isCorrect) {
                     completedUseCases++;
-                    Utils.updateProgressBar(totalUseCases, completedUseCases);
-                    Utils.updateRemainingUseCases(totalUseCases, completedUseCases);
+                    updateProgressBar(totalUseCases, completedUseCases);
+                    updateRemainingUseCases(totalUseCases, completedUseCases);
                     displayFeedback(true);  // Assuming displayFeedback is defined or refactored similarly
                 } else {
                     displayFeedback(false, responseData.message || "Incorrect answer!");
