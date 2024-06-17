@@ -48,6 +48,7 @@ def home():
 
 
 @app.route("/choose-practice", methods=["GET", "POST"])
+@login_required
 def choose_practice():
     """TODO: Need to be complete. User can choose between KYC or TM
     paths of learning. Now its fixed and not dynamic
