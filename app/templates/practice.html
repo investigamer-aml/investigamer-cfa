@@ -1,9 +1,19 @@
 {% extends "base.html" %}
 {% block title %}Investigamer - Practice{% endblock %}
 {% block content %}
+
+
+<div id="mySidebar" class="sidebar">
+  <a href="javascript:void(0)" class="sidebar-btn">&#9776; Toggle Sidebar</a>
+  <a href="#" id="myBtn">Show News Article</a>
+</div>
+
+
+<div id='main' class="main-content">
 <div class="container mx-auto py-8 px-4">
+
   <div class="bg-white shadow-md rounded-lg p-6">
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
     <!-- Standalone lesson title for clear visibility and focus -->
     <div class="text-center">
@@ -66,9 +76,11 @@
     </div>
   </div>
 </div>
-<script src="{{ url_for('static', filename='cfa.js') }}"></script>
+</div>
+<script src="{{ url_for('static', filename='scripts/cfa.js') }}"></script>
 
 <script>
+
   document.addEventListener('DOMContentLoaded', function() {
       let totalUseCases = {{ total_use_cases }};
       let completedUseCases = {{ correct_use_cases }};
@@ -78,6 +90,26 @@
       const answerFeedback = document.getElementById('answer-feedback');
       const useCaseContainer = document.querySelector('.use-case-container');
 
+      const sidebar = document.getElementById('mySidebar');
+      const mainContent = document.getElementById('main');
+      const toggleBtn = document.querySelector('.sidebar-btn');
+
+      toggleBtn.onclick = function() {
+        const isOpen = sidebar.style.width === '250px' || sidebar.style.width === '';
+        sidebar.style.width = isOpen ? '0' : '250px';
+        mainContent.style.flex = isOpen ? '1' : '0.75';
+    };
+
+      window.toggleSidebar = function() {
+        if (sidebar.style.width === '250px') {
+            sidebar.style.width = '0';
+            mainContent.style.marginRight = '0';
+        } else {
+            sidebar.style.width = '250px';
+            mainContent.style.marginRight = '250px';
+        }
+      };
+
       // Get the modal
       var modal = document.getElementById('NewsArticleModal');
       var btn = document.getElementById('myBtn');
@@ -85,6 +117,7 @@
 
       updateProgressBar();
       updateRemainingUseCases();
+      toggleSidebar();
 
       function updateProgressBar() {
           let progressPercentage = (completedUseCases / totalUseCases) * 100;
