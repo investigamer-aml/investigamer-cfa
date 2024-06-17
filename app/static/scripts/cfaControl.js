@@ -1,4 +1,4 @@
-import { updateProgressBar, updateRemainingUseCases } from './utils.js';
+import { updateProgressBar, updateRemainingUseCases, playSound } from './utils.js';
 import { generateQuestionHTML } from './questionControl.js';
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -60,11 +60,11 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isCorrect) {
             feedback.textContent = 'Correct answer!';
             feedback.className = 'bg-green-500 text-center py-2 px-4 rounded text-white';
-            // playSound('sounds/correct.mp3'); Assuming playSound is defined
+            playSound('sounds/correct.mp3');
         } else {
             feedback.textContent = message || 'Incorrect answer!';
             feedback.className = 'bg-red-500 text-center py-2 px-4 rounded text-white';
-            // playSound('sounds/wrong.mp3'); Assuming playSound is defined
+            playSound('sounds/wrong.mp3');
         }
         feedback.classList.remove('hidden');
         setTimeout(() => feedback.classList.add('hidden'), 3000);
