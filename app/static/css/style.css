@@ -198,14 +198,8 @@ input[type="radio"]:checked {
 
 /* Sidebar container */
 .sidebar {
-    flex: 1; /* Takes 1/4 of the space */
-    height: 100vh;
-    width: 25%; /* Ensure it always stays at 1/4 */
-    position: fixed;
-    right: 0; /* Align to the right */
-    background-color: #111; /* Black */
-    padding-top: 60px;
-    transition: width 0.5s;
+    width: 25%; /* Set default width to 25% of the view width */
+    transition: width 0.5s; /* Smooth transition for expanding/collapsing */
 }
 
 /* Sidebar links */
@@ -235,19 +229,16 @@ input[type="radio"]:checked {
 
 /* Style for the main content when sidebar is open */
 .main-content {
-    transition: margin-right 0.5s;
-    padding: 16px;
-    overflow: hidden;
-    width: calc(100% - 250px); /* Full width - sidebar width */
+    margin-right: 25%; /* Set default margin to match the sidebar */
+    transition: margin-right 0.5s; /* Transition for sidebar toggle */
 }
 
+/* Mobile adjustments */
 @media (max-width: 768px) {
     .sidebar {
         width: 100%; /* Full width for mobile */
-        position: fixed; /* Overlay on top */
     }
-
     .main-content {
-        flex: 1; /* Full width when sidebar is hidden */
+        margin-right: 0; /* No margin when sidebar is expanded */
     }
 }

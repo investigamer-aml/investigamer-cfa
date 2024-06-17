@@ -36,7 +36,7 @@
         Remaining use cases: <span id="remaining-count">Calculating...</span>
       </div>
       <!-- Trigger/Open The Modal -->
-<button id="myBtn">Show News Article</button>
+<!-- <button id="myBtn">Show News Article</button> -->
 
 <!-- The Modal -->
 <div id="NewsArticleModal" class="modal">
@@ -95,9 +95,9 @@
       const toggleBtn = document.querySelector('.sidebar-btn');
 
       toggleBtn.onclick = function() {
-        const isOpen = sidebar.style.width === '250px' || sidebar.style.width === '';
-        sidebar.style.width = isOpen ? '0' : '250px';
-        mainContent.style.flex = isOpen ? '1' : '0.75';
+        const isOpen = sidebar.style.width === '25%';
+        sidebar.style.width = isOpen ? '0' : '25%';
+        mainContent.style.marginRight = isOpen ? '0' : '25%';
     };
 
       window.toggleSidebar = function() {
