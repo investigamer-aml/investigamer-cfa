@@ -1,0 +1,22 @@
+.use-case-container {
+    width: 80%;
+    margin: 0 auto;
+    text-align: left;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
+.alert {
+    background-color: var(--alert-color);
+    padding: 10px;
+    border-left: 4px solid darken(var(--alert-color), 20%);
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.content-wrapper {
+    display: flex;
+    justify-content: space-between;
+}
