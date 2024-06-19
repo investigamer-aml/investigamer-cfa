@@ -1,0 +1,20 @@
+@media (max-width: 768px) {
+    header, footer {
+        flex-direction: column;
+        padding: 10px;
+    }
+
+    .main-content, .sidebar {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .use-case-container {
+        width: 95%;
+    }
+
+    .sidebar-btn {
+        top: 10px;
+        right: 10px;
+    }
+}

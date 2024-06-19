@@ -2,102 +2,23 @@ import json
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-from flask import Flask
 from flask import current_app as app
 from flask import jsonify, redirect, render_template, request, session, url_for
-from flask_login import (LoginManager, UserMixin, current_user, login_required,
-                         login_user, logout_user)
-from markdown import markdown
-from sqlalchemy.sql import func
+from flask_login import LoginManager, current_user, login_required
+from markupsafe import Markup
+from sqlalchemy.sql import func, or_, select
 
 from app import db
 from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
                         Questions, UseCases, UserAnswers,
                         UserLessonInteraction, Users)
 
+from .use_case import *
+from .utils import get_next_lesson, render_markdown
+from .views import *
+
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-
-##### REGISTRATION #####
-@app.route("/register", methods=["POST"])
-def register():
-    """
-    Handle the user registration process. Collects data from form, validates,
-    creates a new user, and then redirects to the login page.
-    """
-    username = request.form.get("username")
-    email = request.form.get("email")
-    password = request.form.get("password")
-    is_admin = "is_admin" in request.form
-
-    # Check if user already exists
-    user_exists = Users.query.filter(
-        (Users.email == email) | (Users.username == username)
-    ).first()
-    if user_exists:
-        return jsonify({"error": "User already exists"}), 400
-
-    # Create new user
-    new_user = Users(username=username, email=email, is_admin=is_admin)
-    new_user.set_password(password)  # Hash password
-    new_user.is_admin = is_admin  # Setting the is_admin flag based on checkbox
-    db.session.add(new_user)
-    db.session.commit()
-
-    return redirect(url_for("login"))  # Redirect to the login page
-
-
-@app.route("/register", methods=["GET"])
-def show_register():
-    """
-    Display the registration page.
-    """
-    return render_template("register.html")
-
-
-####### LOGIN #######
-@app.route("/login", methods=["POST"])
-def login():
-    """
-    Authenticate the user. If authentication is successful, redirect to the homepage;
-    otherwise, return an error.
-    """
-    if current_user.is_authenticated:
-        return redirect(url_for("home"))  # Redirect to the homepage
-
-    login_input = request.form.get(
-        "login_input"
-    )  # Assuming you change the form to have 'login_input' instead of 'username'
-    password = request.form.get("password")
-
-    # Attempt to authenticate first by username, then by email
-    user = Users.query.filter(
-        (Users.username == login_input) | (Users.email == login_input)
-    ).first()
-
-    if user and user.check_password(password):
-        login_user(user)
-        return redirect(url_for("home"))  # Redirect to the homepage
-    else:
-        return jsonify({"error": "Invalid username or password"}), 401
-
-
-@app.route("/logout")
-def logout():
-    """
-    Log out the current user and redirect to the home page.
-    """
-    logout_user()
-    return redirect(url_for("home"))
-
-
-@app.route("/login", methods=["GET"])
-def show_login():
-    """
-    Display the login page.
-    """
-    return render_template("login.html")
 
 
 @login_manager.user_loader
@@ -127,7 +48,11 @@ def home():
 
 
 @app.route("/choose-practice", methods=["GET", "POST"])
+@login_required
 def choose_practice():
+    """TODO: Need to be complete. User can choose between KYC or TM
+    paths of learning. Now its fixed and not dynamic
+    """
     if request.method == "POST":
         practice_type = request.form.get("practice_type")
         if practice_type in ["KYC", "TMS"]:
@@ -139,18 +64,22 @@ def choose_practice():
 
 
 # Define your models based on the provided schema
-@app.route("/practice/<int:lesson_id>")
+# @app.route("/practice/<int:lesson_id>")
 @app.route("/practice")
 @app.route("/practice/<string:practice_type>")
 def start_lesson(practice_type=None):
+    """Start the lesson with the right use case to a user"""
     if practice_type not in ["KYC", "TM"]:
         return redirect(url_for("choose_practice"))
 
     user_id = current_user.id
+    app.logger.info(f"Current User: {user_id}")
 
     # Check if there is a similar use case ID stored in the session
     similar_use_case_id = session.get("similar_use_case_id")
+
     if similar_use_case_id:
+        app.logger.info(f"There is a similar use case: {similar_use_case_id}")
         # Retrieve the similar use case from the database
         use_case = UseCases.query.get(similar_use_case_id)
         if use_case:
@@ -159,8 +88,11 @@ def start_lesson(practice_type=None):
             is_similar_use_case = True
     else:
         current_lesson = get_current_lesson(user_id)
+        app.logger.info(f"Current Lesson = {current_lesson}\n")
         if current_lesson:
             current_use_case = get_current_use_case(user_id, current_lesson["id"])
+            app.logger.info(f"get_current_use_case yielded: {current_use_case}")
+
             total_use_cases = get_lessons_use_case_count(current_lesson["id"])
             correct_use_cases = get_users_correct_use_cases_per_lesson(
                 current_lesson["id"], user_id
@@ -173,10 +105,14 @@ def start_lesson(practice_type=None):
                 # Move on to the next lesson
                 next_lesson = get_next_lesson(user_id)
                 if next_lesson:
+                    update_lesson_progress(
+                        user_id, next_lesson["id"], 0
+                    )  # Starting new lesson
                     use_case = next_lesson["use_cases"][
                         0
                     ]  # Retrieve the first use case of the next lesson
                     is_similar_use_case = False
+                    app.logger.info(f"Use Case is: {use_case}")
                 else:
                     # No more lessons or use cases
                     return "Congratulations! You have completed all the lessons."
@@ -203,6 +139,9 @@ def start_lesson(practice_type=None):
         ],
     }
 
+    html_description = render_markdown(use_case.description)
+    use_case_data["description"] = Markup(html_description)
+
     return render_template(
         "practice.html",
         use_case=use_case_data,
@@ -228,187 +167,6 @@ def get_users_correct_use_cases_per_lesson(lesson_id, user_id):
         )
         .count()
     )
-
-
-def json_contains(json_obj, query, threshold=0.75):
-    """Check if json_obj contains at least the threshold percentage of key-value pairs in query."""
-
-    # Flatten the JSON objects for easier comparison
-    def flatten_json(y):
-        out = {}
-
-        def flatten(x, name=""):
-            if type(x) is dict:
-                for a in x:
-                    flatten(x[a], name + a + ".")
-            else:
-                out[name[:-1]] = x
-
-        flatten(y)
-        return out
-
-    flat_json_obj = flatten_json(json_obj)
-    flat_query = flatten_json(query)
-
-    total_keys = len(flat_query)
-    matching_keys = sum(
-        1
-        for key in flat_query
-        if key in flat_json_obj and flat_json_obj[key] == flat_query[key]
-    )
-
-    similarity = matching_keys / total_keys if total_keys > 0 else 0
-    formatted_similarity = f"{similarity:.2%}"
-    app.logger.info(f"Similarity = {formatted_similarity}")
-
-    return similarity >= threshold
-
-
-def find_similar_use_case(current_use_case_id, user_id, lesson_id):
-    """
-    Finds a use case similar to the current one based on shared risk factors.
-
-    This function searches for a use case that shares risk factors with the current use case but has not yet been successfully completed by the user. This can help in recommending similar scenarios for further training or assessment.
-
-    Args:
-        current_use_case_id (int): The ID of the current use case.
-        user_id (int): The ID of the user for whom similar use cases are being searched.
-
-    Returns:
-        UseCases | None: Returns a similar UseCase object if found, otherwise None.
-    """
-    current_use_case = UseCases.query.get(current_use_case_id)
-    if not current_use_case:
-        return None
-
-    app.logger.info(f"/nCurrent Case {current_use_case.risk_factors}")
-
-    current_risk_factors = current_use_case.risk_factors
-    # current_risk_factors = json.loads(current_risk_factors)
-
-    # Query to find a similar use case based on risk factors
-    similar_use_cases = UseCases.query.filter(
-        UseCases.lesson_id == lesson_id,
-        UseCases.id != current_use_case_id,
-        ~UseCases.id.in_(
-            db.session.query(UserAnswers.use_case_id)
-            .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct)
-            .distinct()
-        ),
-    ).all()
-
-    for use_case in similar_use_cases:
-        risk_factors = use_case.risk_factors
-        if json_contains(risk_factors, current_risk_factors):
-            return use_case
-
-    return None
-
-
-@app.route("/submit-answer", methods=["POST"])
-def submit_answer():
-    """
-    Process answers submitted by the user for a use case, evaluate correctness, and respond appropriately.
-    """
-    data = request.get_json()
-    app.logger.info(f"Received data: {data}")
-
-    use_case_id = data.get("use_case_id")
-    # lesson_id = 1  current_user.lesson_id
-    answers_data = data.get("answers")
-
-    if not use_case_id or not answers_data:
-        return jsonify({"error": "Missing use case ID or answers data"}), 400
-
-    results = []
-    has_mistake = False
-    for answer in answers_data:
-        question_id = answer.get("questionId")
-        option_id = answer.get("answer")
-
-        if not question_id or not option_id:
-            return jsonify({"error": "Missing question ID or answer option ID"}), 400
-
-        question = Questions.query.get(question_id)
-        option = Options.query.filter_by(id=option_id, question_id=question_id).first()
-
-        if not question or not option:
-            return jsonify({"error": "Question or option not found"}), 404
-
-        if question.use_case_id != int(use_case_id):
-            return (
-                jsonify(
-                    {"error": "Question does not belong to the specified use case"}
-                ),
-                400,
-            )
-
-        is_correct = option.is_correct
-
-        attempt = UserAnswers(
-            user_id=current_user.id,
-            use_case_id=int(use_case_id),
-            question_id=int(question_id),
-            option_id=int(option_id),
-            is_correct=is_correct,
-            lesson_id=current_user.lesson_id,
-        )
-        db.session.add(attempt)
-        results.append({"questionId": question_id, "isCorrect": is_correct})
-
-        if not is_correct:
-            has_mistake = True
-
-    db.session.commit()
-
-    if has_mistake:
-        # Find a similar use case based on risk factors
-        similar_use_case = find_similar_use_case(
-            use_case_id, current_user.id, current_user.lesson_id
-        )
-        if similar_use_case:
-            # Store the similar use case ID in the session or temporary storage
-            session["similar_use_case_id"] = similar_use_case.id
-
-    next_use_case = get_next_use_case(use_case_id)
-    if next_use_case:
-        first_question = get_first_question_of_use_case(next_use_case.id)
-        next_use_case_data = {
-            "useCaseId": next_use_case.id,
-            "description": next_use_case.description,
-            "firstQuestion": prepare_first_question_data(first_question),
-        }
-        return (
-            jsonify(
-                {
-                    "message": "Answer submitted successfully",
-                    "isCorrect": is_correct,
-                    "nextUseCase": next_use_case_data,
-                }
-            ),
-            200,
-        )
-    else:
-        return jsonify({"message": "No more use cases"}), 200
-
-
-@app.route("/admin")
-@login_required
-def admin():
-    """
-    Display the admin page with a list of use cases created by the current logged-in user, filtered by type.
-    """
-    # Retrieve a type filter from query parameters (if any)
-    type_filter = request.args.get("type")
-
-    if type_filter:
-        use_cases = UseCases.query.filter_by(
-            created_by_user=current_user.id, type=type_filter
-        ).all()
-    else:
-        use_cases = UseCases.query.filter_by(created_by_user=current_user.id).all()
-
-    return render_template("admin.html", use_cases=use_cases)
 
 
 @app.route("/use-case/new", methods=["GET", "POST"])
@@ -463,7 +221,6 @@ def new_use_case():
     # Assuming you have lists of lessons and difficulty levels to populate the form selections
     lessons = Lessons.query.all()
     difficulty_levels = DifficultyLevel.query.all()
-    print(difficulty_levels)
     return render_template(
         "create_use_case.html", difficulty_levels=difficulty_levels, lessons=lessons
     )
@@ -533,31 +290,15 @@ def edit_use_case(use_case_id):
     )
 
 
-def get_first_question_of_use_case(use_case_id):
-    """
-    Retrieve the first question of a given use case by ID.
-
-    Args:
-        use_case_id (int): The identifier of the use case.
-
-    Returns:
-        The first question object or None if no question is associated with the use case.
-    """
-    return (
-        Questions.query.filter_by(use_case_id=use_case_id)
-        .order_by(Questions.id)
-        .first()
-    )
-
-
 @app.route("/get-news-article", methods=["GET"])
 def get_news_article():
+    """Get the news article by filtering with the current use case id"""
     use_case_id = request.args.get("use_case_id")
     news_article = NewsArticle.query.filter_by(use_case_id=use_case_id).first()
 
     if use_case_id and news_article:
         # Convert Markdown content to HTML
-        html_content = markdown(news_article.content)
+        html_content = render_markdown(news_article.content)
         return jsonify(success=True, content=html_content)
 
     return jsonify(success=False, message="News article not found.")
@@ -580,7 +321,7 @@ def get_current_use_case(user_id, lesson_id):
         .filter(
             UserAnswers.user_id == user_id,
             UserAnswers.lesson_id == lesson_id,
-            UserAnswers.is_correct == True,
+            UserAnswers.is_correct,
         )
         .distinct()
         .subquery()
@@ -589,7 +330,7 @@ def get_current_use_case(user_id, lesson_id):
     # Find the first uncompleted use case in the current lesson
     current_use_case = (
         UseCases.query.filter_by(lesson_id=lesson_id)
-        .filter(~UseCases.id.in_(completed_use_cases))
+        .filter(~UseCases.id.in_(select(completed_use_cases)))
         .order_by(UseCases.id)
         .first()
     )
@@ -597,105 +338,23 @@ def get_current_use_case(user_id, lesson_id):
     return current_use_case
 
 
-def get_next_use_case(current_use_case_id):
-    """
-    Retrieve the next sequential use case following the current use case ID.
-
-    Args:
-        current_use_case_id (int): The identifier of the current use case.
-
-    Returns:
-        The next use case object or None if there is no subsequent use case.
-    """
-    # Check if there is a similar use case ID stored in the session
-    similar_use_case_id = session.get("similar_use_case_id")
-    if similar_use_case_id:
-        # Retrieve the similar use case from the database
-        similar_use_case = UseCases.query.get(similar_use_case_id)
-        if similar_use_case:
-            # Remove the similar use case ID from the session
-            session.pop("similar_use_case_id", None)
-            return similar_use_case
-
-    current_use_case = UseCases.query.get(current_use_case_id)
-    current_lesson_id = current_use_case.lesson_id
-
-    # Check if the user has completed all the use cases in the current lesson
-    completed_use_cases = UserAnswers.query.filter_by(
-        user_id=current_user.id, is_correct=True
-    ).all()
-    completed_use_case_ids = [answer.use_case_id for answer in completed_use_cases]
-    remaining_use_cases = (
-        UseCases.query.filter(
-            UseCases.lesson_id == current_lesson_id,
-            UseCases.id > current_use_case_id,
-            ~UseCases.id.in_(completed_use_case_ids),
-        )
-        .order_by(UseCases.id)
-        .first()
-    )
-
-    if remaining_use_cases:
-        return remaining_use_cases
-    else:
-        # Move on to the next lesson
-        next_lesson = get_next_lesson(current_user.id)
-        if next_lesson:
-            # Retrieve the first use case of the next lesson
-            next_use_case = (
-                UseCases.query.filter_by(lesson_id=next_lesson["id"])
-                .order_by(UseCases.id)
-                .first()
-            )
-            return next_use_case
-        else:
-            return None
-
-
-def prepare_first_question_data(first_question):
-    """
-    Prepare data for the first question of a use case to facilitate rendering or further processing.
-
-    Args:
-        question (Question): A question object.
-
-    Returns:
-        A dictionary containing the question ID, text, and options, or None if no question is provided.
-    """
-    if not first_question:
-        return None  # or return an appropriate response indicating no questions are available
-
-    # Prepare options data
-    options_data = [
-        {"id": option.id, "text": option.text} for option in first_question.options
-    ]
-
-    # Prepare and return question data
-    question_data = {
-        "questionId": first_question.id,
-        "text": first_question.text,
-        "options": options_data,
-    }
-
-    return question_data
-
-
 def get_current_lesson(user_id):
-    """Fetch the current lesson the user is on.
+    """Fetch the current lesson the user is on based on their progress.
 
-    Input:
-    - user_id (int) -> user identifier
+    Args:
+    - user_id (int): User identifier
 
-    Output:
-    - lesson_id (int) -> lesson identifier
+    Returns:
+    - Dictionary with lesson ID and title or None if no lessons are found
     """
 
     # Subquery to get the number of correct answers per lesson for the user
     correct_answers_subquery = (
         db.session.query(
-            UserAnswers.lesson_id, func.count(UserAnswers.id).label("correct_count")
+            UserAnswers.lesson_id.label("lesson_id"),
+            func.count(UserAnswers.id).label("correct_count"),
         )
-        .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct == True)
+        .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct)
         .group_by(UserAnswers.lesson_id)
         .subquery()
     )
@@ -703,7 +362,8 @@ def get_current_lesson(user_id):
     # Subquery to get the total number of questions per lesson
     total_questions_subquery = (
         db.session.query(
-            UseCases.lesson_id, func.count(Questions.id).label("total_questions")
+            UseCases.lesson_id.label("lesson_id"),
+            func.count(Questions.id).label("total_questions"),
         )
         .join(Questions, UseCases.id == Questions.use_case_id)
         .group_by(UseCases.lesson_id)
@@ -725,23 +385,33 @@ def get_current_lesson(user_id):
         .subquery()
     )
 
-    # Find the first lesson that the user hasn't completed correctly
+    # Find the first lesson that the user hasn't completed correctly or hasn't attempted
     current_lesson = (
         db.session.query(Lessons)
         .outerjoin(
             completed_lessons_subquery,
             Lessons.id == completed_lessons_subquery.c.lesson_id,
         )
-        .filter(completed_lessons_subquery.c.lesson_id == None)
+        .filter(
+            or_(
+                completed_lessons_subquery.c.lesson_id == None,
+                Lessons.id.notin_(select(completed_lessons_subquery)),
+            )
+        )
         .order_by(Lessons.id)
         .first()
     )
 
     if current_lesson:
-        print(current_lesson)
         return {"id": current_lesson.id, "title": current_lesson.title}
 
     return None
+
+
+def calculate_progress(lesson_id, user_id):
+    total_use_cases = get_lessons_use_case_count(lesson_id)
+    completed_use_cases = get_users_correct_use_cases_per_lesson(lesson_id, user_id)
+    return (completed_use_cases / total_use_cases) * 100
 
 
 def update_lesson_progress(user_id, lesson_id, progress, score=None):
@@ -769,48 +439,3 @@ def update_lesson_progress(user_id, lesson_id, progress, score=None):
     db.session.commit()
 
     return interaction
-
-
-def get_next_lesson(user_id: int) -> Dict[str, Any]:
-    """
-    Retrieves the next lesson for a user based on their progress and difficulty level.
-    """
-    last_interaction = (
-        UserLessonInteraction.query.filter_by(user_id=user_id)
-        .order_by(UserLessonInteraction.last_accessed.desc())
-        .first()
-    )
-    print(last_interaction)
-
-    if last_interaction and last_interaction.completed:
-        next_lesson = (
-            Lessons.query.filter(Lessons.id > last_interaction.lesson_id)
-            .order_by(Lessons.id)
-            .first()
-        )
-        print(next_lesson)
-    else:
-        next_lesson = (
-            Lessons.query.filter_by(id=last_interaction.lesson_id).first()
-            if last_interaction
-            else Lessons.query.first()
-        )
-
-    if next_lesson:
-        # Retrieve the associated use cases for the next lesson
-        use_cases = UseCases.query.filter_by(lesson_id=next_lesson.id).all()
-        lesson_data = {
-            "id": next_lesson.id,
-            "title": next_lesson.title,
-            "use_cases": [
-                {
-                    "id": use_case.id,
-                    "description": use_case.description,
-                    # Include other relevant use case data
-                }
-                for use_case in use_cases
-            ],
-        }
-
-        return lesson_data
-    return None
