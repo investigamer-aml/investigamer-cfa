@@ -22,38 +22,38 @@
 
         <div class="use-case-container bg-gray-100 rounded-lg p-6 shadow-inner">
           <div id="progress-bar-container" class="mb-6">
-            <div id="progress-bar" class="bg-green-500 text-xs font-medium text-white text-center py-1 rounded-full" style="width: 0%">0%</div>
+              <div id="progress-bar" class="bg-green-500 text-xs font-medium text-white text-center py-1 rounded-full" style="width: 0%">0%</div>
           </div>
           <div id="remaining-use-cases" class="text-sm mb-4 text-right text-gray-600">
-            Remaining use cases: <span id="remaining-count">Calculating...</span>
+              Remaining use cases: <span id="remaining-count">Calculating...</span>
           </div>
 
           <div id="answer-feedback" class="hidden text-center py-2 px-4 rounded bg-red-500 text-white"></div>
           <p id="use-case-description" class="text-lg mb-4 text-gray-700">{{ use_case.description|safe }}</p>
           <form id="questions-form" action="/submit-answer" method="post" enctype="application/json">
-            <input type="hidden" id="use_case_id" name="use_case_id" value="{{ use_case.id }}">
-            <div id="questions-container">
-              {% for question in use_case.questions %}
-              <div class="mb-6">
-                <p class="font-bold mb-2 text-gray-700">{{ question.text }}</p>
-                {% for option in question.options %}
-                <label class="block mb-2 cursor-pointer">
-                  <input type="radio" name="answer[{{ question.id }}]" value="{{ option.id }}" class="mr-2 leading-tight">
-                  {{ option.text }}
-                </label>
-                {% endfor %}
+              <input type="hidden" id="use_case_id" name="use_case_id" value="{{ use_case.id }}">
+              <div id="questions-container">
+                  {% for question in use_case.questions %}
+                  <div class="mb-6">
+                      <p class="font-bold mb-2 text-gray-700">{{ question.text }}</p>
+                      {% for option in question.options %}
+                      <label class="block mb-2 cursor-pointer">
+                          <input type="radio" name="answer[{{ question.id }}]" value="{{ option.id }}" class="mr-2 leading-tight">
+                          {{ option.text }}
+                      </label>
+                      {% endfor %}
+                  </div>
+                  {% endfor %}
               </div>
-              {% endfor %}
-            </div>
-            <button type="submit" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-full mt-4">
-              Submit Answer
-            </button>
+              <button type="submit" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-full mt-4">
+                  Submit Answer
+              </button>
           </form>
-          <div class="text-xs text-gray-500 text-right mt-4">
-            Lesson ID: {{ use_case.lesson_id }}, UseCase ID: {{ use_case.id }}
+          <div id = 'lesson-id' class="text-xs text-gray-500 text-right mt-4">
+              Lesson ID: {{ use_case.lesson_id }}, UseCase ID: {{ use_case.id }}
           </div>
           <div id="use-case-data" data-total-use-cases="{{ total_use_cases }}" data-completed-use-cases="{{ correct_use_cases }}"></div>
-        </div>
+      </div>
       </div>
     </div>
   </div>
