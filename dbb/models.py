@@ -1,7 +1,7 @@
 """ DB models for the investigamer app
 """
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 
 from flask_login import UserMixin
@@ -51,13 +51,20 @@ class Users(UserMixin, db.Model):
     """
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
+    first_name = db.Column(db.String(80), unique=True, nullable=False)
+    last_name = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     hashed_password = db.Column(db.String(128), nullable=False)
     use_case_difficulty = db.Column(db.String(128), nullable=False)
     lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
     score = db.Column(db.Float, nullable=False)
     is_admin = db.Column(db.Boolean, default=False, nullable=False)  # Add this line
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     def set_password(self, password):
         """

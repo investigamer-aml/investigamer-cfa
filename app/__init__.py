@@ -3,6 +3,7 @@
 import os
 
 from flask import Flask
+from flask_cors import CORS
 from flask_login import LoginManager
 from flask_sqlalchemy import SQLAlchemy
 
@@ -15,6 +16,7 @@ def create_app(config_class="Config"):
     Creates and configures an instance of the Flask application.
     """
     app = Flask(__name__)
+    CORS(app)
     config_module = __import__("config", fromlist=[config_class])
     app.config.from_object(getattr(config_module, config_class))
 

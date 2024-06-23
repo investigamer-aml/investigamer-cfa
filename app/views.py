@@ -2,6 +2,8 @@
  Module to handle all the views of the app
 """
 
+from datetime import datetime, timezone
+
 from flask import Blueprint
 from flask import current_app as app
 from flask import jsonify, redirect, render_template, request, url_for
@@ -20,26 +22,37 @@ def register():
     Handle the user registration process. Collects data from form, validates,
     creates a new user, and then redirects to the login page.
     """
-    username = request.form.get("username")
-    email = request.form.get("email")
-    password = request.form.get("password")
-    is_admin = "is_admin" in request.form
+    data = request.get_json()
+    first_name = data.get("first_name")
+    last_name = data.get("last_name")
+    email = data.get("email")
+    password = data.get("password")
+    is_admin = data.get("is_admin", False)
 
     # Check if user already exists
     user_exists = Users.query.filter(
-        (Users.email == email) | (Users.username == username)
+        (Users.email == email)
+        | (Users.first_name == first_name)
+        | (Users.last_name == last_name)
     ).first()
     if user_exists:
         return jsonify({"error": "User already exists"}), 400
 
     # Create new user
-    new_user = Users(username=username, email=email, is_admin=is_admin)
+    new_user = Users(
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        is_admin=is_admin,
+        created_at=datetime.now(timezone.utc),
+        updated_at=datetime.now(timezone.utc),
+    )
     new_user.set_password(password)  # Hash password
-    new_user.is_admin = is_admin  # Setting the is_admin flag based on checkbox
+
     db.session.add(new_user)
     db.session.commit()
 
-    return redirect(url_for("login"))  # Redirect to the login page
+    return jsonify({"message": "User created successfully"}), 201
 
 
 @app.route("/register", methods=["GET"])

@@ -7,6 +7,7 @@ fastapi
 Flask-Login
 pytest
 flask_testing
+flask-cors
 alembic
 markdown
 python-dotenv
