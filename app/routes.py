@@ -65,12 +65,13 @@ def choose_practice():
 
 # Define your models based on the provided schema
 # @app.route("/practice/<int:lesson_id>")
-@app.route("/practice")
-@app.route("/practice/<string:practice_type>")
-def start_lesson(practice_type=None):
-    """Start the lesson with the right use case to a user"""
-    if practice_type not in ["KYC", "TM"]:
-        return redirect(url_for("choose_practice"))
+@app.route("/api/practice")
+@app.route("/api/practice/<string:practice_type>")
+@login_required
+def get_practice_data(practice_type=None):
+    """API endpoint to get practice data for a user"""
+    # if practice_type not in ["KYC", "TM"]:
+    # return jsonify({"error": "Invalid practice type"}), 400
 
     user_id = current_user.id
     app.logger.info(f"Current User: {user_id}")
@@ -80,10 +81,8 @@ def start_lesson(practice_type=None):
 
     if similar_use_case_id:
         app.logger.info(f"There is a similar use case: {similar_use_case_id}")
-        # Retrieve the similar use case from the database
         use_case = UseCases.query.get(similar_use_case_id)
         if use_case:
-            # Remove the similar use case ID from the session
             session.pop("similar_use_case_id", None)
             is_similar_use_case = True
     else:
@@ -94,7 +93,7 @@ def start_lesson(practice_type=None):
             app.logger.info(f"get_current_use_case yielded: {current_use_case}")
 
             total_use_cases = get_lessons_use_case_count(current_lesson["id"])
-            correct_use_cases = get_users_correct_use_cases_per_lesson(
+            completed_use_cases = get_users_correct_use_cases_per_lesson(
                 current_lesson["id"], user_id
             )
 
@@ -102,36 +101,29 @@ def start_lesson(practice_type=None):
                 use_case = current_use_case
                 is_similar_use_case = False
             else:
-                # Move on to the next lesson
                 next_lesson = get_next_lesson(user_id)
                 if next_lesson:
-                    update_lesson_progress(
-                        user_id, next_lesson["id"], 0
-                    )  # Starting new lesson
-                    use_case = next_lesson["use_cases"][
-                        0
-                    ]  # Retrieve the first use case of the next lesson
+                    update_lesson_progress(user_id, next_lesson["id"], 0)
+                    use_case = next_lesson["use_cases"][0]
                     is_similar_use_case = False
                     app.logger.info(f"Use Case is: {use_case}")
                 else:
-                    # No more lessons or use cases
-                    return "Congratulations! You have completed all the lessons."
+                    return jsonify({"message": "All lessons completed"}), 200
         else:
-            # No more lessons or use cases
-            return "Congratulations! You have completed all the lessons."
+            return jsonify({"message": "All lessons completed"}), 200
 
-    # Prepare the use case data for the template
+    # Prepare the use case data
     use_case_data = {
         "id": use_case.id,
         "lesson_id": use_case.lesson_id,
         "lesson_title": current_lesson["title"],
-        "description": use_case.description,
+        "description": render_markdown(use_case.description),
         "questions": [
             {
-                "id": question.id,
+                "id": str(question.id),
                 "text": question.text,
                 "options": [
-                    {"id": option.id, "text": option.text}
+                    {"id": str(option.id), "text": option.text}
                     for option in question.options
                 ],
             }
@@ -139,15 +131,13 @@ def start_lesson(practice_type=None):
         ],
     }
 
-    html_description = render_markdown(use_case.description)
-    use_case_data["description"] = Markup(html_description)
-
-    return render_template(
-        "practice.html",
-        use_case=use_case_data,
-        is_similar_use_case=is_similar_use_case,
-        total_use_cases=total_use_cases,
-        correct_use_cases=correct_use_cases,
+    return jsonify(
+        {
+            "useCase": use_case_data,
+            "isSimilarUseCase": is_similar_use_case,
+            "totalUseCases": total_use_cases,
+            "completedUseCases": completed_use_cases,
+        }
     )
 
 

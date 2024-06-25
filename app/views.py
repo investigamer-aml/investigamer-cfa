@@ -67,25 +67,25 @@ def show_register():
 @app.route("/login", methods=["POST"])
 def login():
     """
-    Authenticate the user. If authentication is successful, redirect to the homepage;
+    Authenticate the user. If authentication is successful, return a JSON response with user info;
     otherwise, return an error.
     """
     if current_user.is_authenticated:
-        return redirect(url_for("home"))  # Redirect to the homepage
+        return jsonify({"message": "Already logged in"}), 200
 
-    login_input = request.form.get(
-        "login_input"
-    )  # Assuming you change the form to have 'login_input' instead of 'username'
-    password = request.form.get("password")
+    data = request.get_json()
+    login_input = data.get("login_input")
+    password = data.get("password")
 
     # Attempt to authenticate first by username, then by email
-    user = Users.query.filter(
-        (Users.username == login_input) | (Users.email == login_input)
-    ).first()
+    user = Users.query.filter((Users.email == login_input)).first()
 
     if user and user.check_password(password):
         login_user(user)
-        return redirect(url_for("home"))  # Redirect to the homepage
+        return (
+            jsonify({"message": "Login successful", "user": {"email": user.email}}),
+            200,
+        )
     else:
         return jsonify({"error": "Invalid username or password"}), 401
 
