@@ -64,7 +64,7 @@ def show_register():
 
 
 ####### LOGIN #######
-@app.route("/login", methods=["POST"])
+@app.route("/api/login", methods=["POST"])
 def login():
     """
     Authenticate the user. If authentication is successful, return a JSON response with user info;

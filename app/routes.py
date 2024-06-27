@@ -4,11 +4,11 @@ from typing import Any, Dict, Optional
 
 from flask import current_app as app
 from flask import jsonify, redirect, render_template, request, session, url_for
-from flask_login import LoginManager, current_user, login_required
+from flask_login import current_user, login_required
 from markupsafe import Markup
 from sqlalchemy.sql import func, or_, select
 
-from app import db
+from app import db, login_manager
 from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
                         Questions, UseCases, UserAnswers,
                         UserLessonInteraction, Users)
@@ -16,9 +16,6 @@ from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
 from .use_case import *
 from .utils import get_next_lesson, render_markdown
 from .views import *
-
-login_manager = LoginManager()
-login_manager.init_app(app)
 
 
 @login_manager.user_loader

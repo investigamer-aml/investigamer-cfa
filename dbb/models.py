@@ -66,6 +66,17 @@ class Users(UserMixin, db.Model):
         onupdate=lambda: datetime.now(timezone.utc),
     )
 
+    def get_id(self):
+        """
+        Get the unique identifier for the current user.
+
+        This method overrides the default get_id method provided by UserMixin to return the user's ID as a string.
+
+        Returns:
+            str: The unique identifier of the user as a string.
+        """
+        return str(self.id)
+
     def set_password(self, password):
         """
         Sets the password for the current user, storing a hash of it rather than the plain text.
