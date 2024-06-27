@@ -4,27 +4,37 @@
 from flask import Blueprint
 from flask import current_app as app
 from flask import jsonify, request, session
-from flask_login import (current_user, login_required)
-
-from .utils import find_similar_use_case, get_first_question_of_use_case, get_next_use_case, prepare_first_question_data
+from flask_login import current_user, login_required
 
 from app import db
 from dbb.models import Options, Questions, UserAnswers
 
+from .utils import (find_similar_use_case, get_first_question_of_use_case,
+                    get_next_use_case, prepare_first_question_data)
+
 use_case_bp = Blueprint("use_case", __name__)
 
-@use_case_bp.route("/submit-answer", methods=["POST"])
+
+@use_case_bp.route("/api/practice/submit", methods=["POST"])
 @login_required
 def submit_answer():
     """
     Process answers submitted by the user for a use case, evaluate correctness, and respond appropriately.
     """
+    app.logger.debug("Received submit request")
+    app.logger.debug("Request method: %s", request.method)
+    app.logger.debug("Request data: %s", request.json)
+
     data = request.get_json()
     app.logger.info(f"Received data: {data}")
 
-    use_case_id = data.get("use_case_id")
-    # lesson_id = 1  current_user.lesson_id
+    use_case_id = data.get("useCaseId")
+    lesson_id = data.get("lessonId")
     answers_data = data.get("answers")
+
+    app.logger.debug(f"use_case_id: {use_case_id}")
+    app.logger.debug(f"answers: {answers_data}")
+    app.logger.debug(f"lesson: {lesson_id}")
 
     if not use_case_id or not answers_data:
         return jsonify({"error": "Missing use case ID or answers data"}), 400
@@ -60,7 +70,7 @@ def submit_answer():
             question_id=int(question_id),
             option_id=int(option_id),
             is_correct=is_correct,
-            lesson_id=current_user.lesson_id,
+            lesson_id=lesson_id,
         )
         db.session.add(attempt)
         results.append({"questionId": question_id, "isCorrect": is_correct})
