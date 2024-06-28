@@ -89,7 +89,6 @@ def submit_answer():
     is_similar_use_case = False
 
     if has_mistake:
-        # Find a similar use case based on risk factors
         similar_use_case = find_similar_use_case(
             use_case_id, current_user.id, lesson_id
         )
@@ -115,6 +114,8 @@ def submit_answer():
     }
 
     if next_use_case:
+        app.logger.info(f"Next use case: {next_use_case.id}")
+        app.logger.debug(f"Next use case questions: {next_use_case.questions}")
         first_question = get_first_question_of_use_case(next_use_case.id)
         response_data["nextUseCase"] = {
             "useCaseId": next_use_case.id,
@@ -123,5 +124,7 @@ def submit_answer():
             "lessonId": next_use_case.lesson_id,
         }
         response_data["isSimilarUseCase"] = is_similar_use_case
+    else:
+        app.logger.info("No next use case available")
 
     return jsonify(response_data), 200

@@ -3,16 +3,14 @@
 from typing import Any, Dict, Optional
 
 from flask import current_app as app
-from flask import session
-from flask_login import current_user
 from markdown import markdown
 from markupsafe import Markup
+from sqlalchemy import select
 from werkzeug.security import generate_password_hash
 
 from app import db
-from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
-                        Questions, UseCases, UserAnswers,
-                        UserLessonInteraction, Users)
+from dbb.models import (Lessons, Questions, UseCases, UserAnswers,
+                        UserLessonInteraction)
 
 
 def set_password(password):
@@ -73,7 +71,7 @@ def find_similar_use_case(current_use_case_id, user_id, lesson_id):
     if not current_use_case:
         return None
 
-    app.logger.info(f"/nCurrent Case {current_use_case.risk_factors}")
+    app.logger.info(f"Current Case {current_use_case.risk_factors}")
 
     current_risk_factors = current_use_case.risk_factors
     # current_risk_factors = json.loads(current_risk_factors)
@@ -182,14 +180,13 @@ def get_next_use_case(current_use_case_id, user_id, lesson_id):
 
     # Get completed use cases for this user in this lesson
     completed_use_cases = (
-        db.session.query(UserAnswers.use_case_id)
-        .filter(
+        select(UserAnswers.use_case_id)
+        .where(
             UserAnswers.user_id == user_id,
             UserAnswers.lesson_id == lesson_id,
             UserAnswers.is_correct == True,
         )
         .distinct()
-        .subquery()
     )
 
     # Find the next uncompleted use case in the current lesson

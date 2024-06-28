@@ -62,19 +62,14 @@ def choose_practice():
 
 
 # Define your models based on the provided schema
-# @app.route("/practice/<int:lesson_id>")
 @app.route("/api/practice")
 @app.route("/api/practice/<string:practice_type>")
 @login_required
 def get_practice_data(practice_type=None):
     """API endpoint to get practice data for a user"""
-    # if practice_type not in ["KYC", "TM"]:
-    # return jsonify({"error": "Invalid practice type"}), 400
-
     user_id = current_user.id
     app.logger.info(f"Current User: {user_id}")
 
-    # Check if there is a similar use case ID stored in the session
     similar_use_case_id = session.get("similar_use_case_id")
 
     if similar_use_case_id:
@@ -110,7 +105,6 @@ def get_practice_data(practice_type=None):
         else:
             return jsonify({"message": "All lessons completed"}), 200
 
-    # Prepare the use case data
     use_case_data = {
         "id": use_case.id,
         "lesson_id": use_case.lesson_id,
@@ -128,6 +122,8 @@ def get_practice_data(practice_type=None):
             for question in use_case.questions
         ],
     }
+
+    app.logger.info(f"Sending use case data: {use_case_data}")
 
     return jsonify(
         {
