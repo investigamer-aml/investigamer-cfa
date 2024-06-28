@@ -14,7 +14,8 @@ from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
                         UserLessonInteraction, Users)
 
 from .use_case import *
-from .utils import get_next_lesson, render_markdown
+from .utils import (get_lessons_use_case_count, get_next_lesson,
+                    get_users_correct_use_cases_per_lesson, render_markdown)
 from .views import *
 
 
@@ -23,7 +24,7 @@ def load_user(user_id):
     """
     Load the user object from the user ID stored in the session.
     """
-    return Users.query.get(int(user_id))
+    return db.session.get(Users, int(user_id))
 
 
 @app.route("/profile")
@@ -135,24 +136,6 @@ def get_practice_data(practice_type=None):
             "totalUseCases": total_use_cases,
             "completedUseCases": completed_use_cases,
         }
-    )
-
-
-def get_lessons_use_case_count(lesson_id):
-    """Get the total number of cases in a lesson"""
-    return db.session.query(UseCases).filter(UseCases.lesson_id == lesson_id).count()
-
-
-def get_users_correct_use_cases_per_lesson(lesson_id, user_id):
-    """Check how many correct use cases a user has submitted within a lesson"""
-    return (
-        db.session.query(UserAnswers)
-        .filter(
-            UserAnswers.lesson_id == lesson_id,
-            UserAnswers.user_id == user_id,
-            UserAnswers.is_correct,
-        )
-        .count()
     )
 
 

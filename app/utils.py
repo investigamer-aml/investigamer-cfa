@@ -5,9 +5,9 @@ from typing import Any, Dict, Optional
 from flask import current_app as app
 from flask import session
 from flask_login import current_user
-from werkzeug.security import generate_password_hash
-from markupsafe import Markup
 from markdown import markdown
+from markupsafe import Markup
+from werkzeug.security import generate_password_hash
 
 from app import db
 from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
@@ -69,7 +69,7 @@ def find_similar_use_case(current_use_case_id, user_id, lesson_id):
     Returns:
         UseCases | None: Returns a similar UseCase object if found, otherwise None.
     """
-    current_use_case = UseCases.query.get(current_use_case_id)
+    current_use_case = db.session.get(UseCases, int(current_use_case_id))
     if not current_use_case:
         return None
 
@@ -159,59 +159,74 @@ def get_first_question_of_use_case(use_case_id):
     )
 
 
-def get_next_use_case(current_use_case_id):
+def get_next_use_case(current_use_case_id, user_id, lesson_id):
     """
-    Retrieve the next sequential use case following the current use case ID.
+    Retrieves the next use case for a user, considering similar cases and lesson progression.
 
     Args:
-        current_use_case_id (int): The identifier of the current use case.
+        current_use_case_id (int): The ID of the current use case.
+        user_id (int): The ID of the user.
+        lesson_id (int): The ID of the current lesson.
 
     Returns:
-        The next use case object or None if there is no subsequent use case.
+        UseCases | None: The next use case object or None if there are no more use cases.
     """
-    # Check if there is a similar use case ID stored in the session
-    similar_use_case_id = session.get("similar_use_case_id")
-    if similar_use_case_id:
-        # Retrieve the similar use case from the database
-        similar_use_case = UseCases.query.get(similar_use_case_id)
-        if similar_use_case:
-            # Remove the similar use case ID from the session
-            session.pop("similar_use_case_id", None)
-            return similar_use_case
+    current_use_case = db.session.get(UseCases, int(current_use_case_id))
+    if not current_use_case:
+        return None
 
-    current_use_case = UseCases.query.get(current_use_case_id)
-    current_lesson_id = current_use_case.lesson_id
+    # Check for a similar use case first
+    similar_use_case = find_similar_use_case(current_use_case_id, user_id, lesson_id)
+    if similar_use_case:
+        return similar_use_case
 
-    # Check if the user has completed all the use cases in the current lesson
-    completed_use_cases = UserAnswers.query.filter_by(
-        user_id=current_user.id, is_correct=True
-    ).all()
-    completed_use_case_ids = [answer.use_case_id for answer in completed_use_cases]
-    remaining_use_cases = (
+    # Get completed use cases for this user in this lesson
+    completed_use_cases = (
+        db.session.query(UserAnswers.use_case_id)
+        .filter(
+            UserAnswers.user_id == user_id,
+            UserAnswers.lesson_id == lesson_id,
+            UserAnswers.is_correct == True,
+        )
+        .distinct()
+        .subquery()
+    )
+
+    # Find the next uncompleted use case in the current lesson
+    next_use_case = (
         UseCases.query.filter(
-            UseCases.lesson_id == current_lesson_id,
+            UseCases.lesson_id == lesson_id,
             UseCases.id > current_use_case_id,
-            ~UseCases.id.in_(completed_use_case_ids),
+            ~UseCases.id.in_(completed_use_cases),
         )
         .order_by(UseCases.id)
         .first()
     )
 
-    if remaining_use_cases:
-        return remaining_use_cases
-    else:
-        # Move on to the next lesson
-        next_lesson = get_next_lesson(current_user.id)
-        if next_lesson:
-            # Retrieve the first use case of the next lesson
-            next_use_case = (
-                UseCases.query.filter_by(lesson_id=next_lesson["id"])
-                .order_by(UseCases.id)
-                .first()
+    if next_use_case:
+        return next_use_case
+
+    # If no next use case in the current lesson, check for the next lesson
+    next_lesson = (
+        Lessons.query.filter(Lessons.id > lesson_id).order_by(Lessons.id).first()
+    )
+    if next_lesson:
+        # Find the first uncompleted use case in the next lesson
+        first_use_case_next_lesson = (
+            UseCases.query.filter(
+                UseCases.lesson_id == next_lesson.id,
+                ~UseCases.id.in_(
+                    db.session.query(UserAnswers.use_case_id)
+                    .filter(UserAnswers.user_id == user_id, UserAnswers.is_correct)
+                    .distinct()
+                ),
             )
-            return next_use_case
-        else:
-            return None
+            .order_by(UseCases.id)
+            .first()
+        )
+        return first_use_case_next_lesson
+
+    return None  # No more use cases available
 
 
 def prepare_first_question_data(first_question):
@@ -241,31 +256,26 @@ def prepare_first_question_data(first_question):
 
     return question_data
 
+
 def render_markdown(content):
     """Convert Markdown formatted text to HTML"""
     html = markdown(content)
     return Markup(html)
 
-# import bleach
 
-# # Define allowed tags and attributes
-# allowed_tags = ['p', 'strong', 'em', 'ul', 'ol', 'li', 'a']
-# allowed_attrs = {'a': ['href', 'title']}
+def get_lessons_use_case_count(lesson_id):
+    """Get the total number of cases in a lesson"""
+    return db.session.query(UseCases).filter(UseCases.lesson_id == lesson_id).count()
 
-# @app.route("/practice/<string:practice_type>")
-# def start_lesson(practice_type=None):
-#     # Your existing code
-#     ...
-#     if use_case:
-#         # Sanitize HTML
-#         safe_html = bleach.clean(use_case.description, tags=allowed_tags, attributes=allowed_attrs, strip=True)
-#         use_case_data['description'] = Markup(safe_html)
-#     ...
 
-#     return render_template(
-#         "practice.html",
-#         use_case=use_case_data,
-#         is_similar_use_case=is_similar_use_case,
-#         total_use_cases=total_use_cases,
-#         correct_use_cases=correct_use_cases,
-#     )
+def get_users_correct_use_cases_per_lesson(lesson_id, user_id):
+    """Check how many correct use cases a user has submitted within a lesson"""
+    return (
+        db.session.query(UserAnswers)
+        .filter(
+            UserAnswers.lesson_id == lesson_id,
+            UserAnswers.user_id == user_id,
+            UserAnswers.is_correct,
+        )
+        .count()
+    )

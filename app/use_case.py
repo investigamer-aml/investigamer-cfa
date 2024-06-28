@@ -10,7 +10,9 @@ from app import db
 from dbb.models import Options, Questions, UserAnswers
 
 from .utils import (find_similar_use_case, get_first_question_of_use_case,
-                    get_next_use_case, prepare_first_question_data)
+                    get_lessons_use_case_count, get_next_use_case,
+                    get_users_correct_use_cases_per_lesson,
+                    prepare_first_question_data)
 
 use_case_bp = Blueprint("use_case", __name__)
 
@@ -36,8 +38,11 @@ def submit_answer():
     app.logger.debug(f"answers: {answers_data}")
     app.logger.debug(f"lesson: {lesson_id}")
 
-    if not use_case_id or not answers_data:
-        return jsonify({"error": "Missing use case ID or answers data"}), 400
+    if not use_case_id or not answers_data or not lesson_id:
+        return (
+            jsonify({"error": "Missing use case ID, lesson ID, or answers data"}),
+            400,
+        )
 
     results = []
     has_mistake = False
@@ -80,32 +85,43 @@ def submit_answer():
 
     db.session.commit()
 
+    next_use_case = None
+    is_similar_use_case = False
+
     if has_mistake:
         # Find a similar use case based on risk factors
         similar_use_case = find_similar_use_case(
-            use_case_id, current_user.id, current_user.lesson_id
+            use_case_id, current_user.id, lesson_id
         )
         if similar_use_case:
-            # Store the similar use case ID in the session or temporary storage
-            session["similar_use_case_id"] = similar_use_case.id
+            next_use_case = similar_use_case
+            is_similar_use_case = True
 
-    next_use_case = get_next_use_case(use_case_id)
+    if not next_use_case:
+        # If no mistake or no similar use case found, get the next sequential use case
+        next_use_case = get_next_use_case(use_case_id, current_user.id, lesson_id)
+
+    completed_use_cases = get_users_correct_use_cases_per_lesson(
+        lesson_id, current_user.id
+    )
+    total_use_cases = get_lessons_use_case_count(lesson_id)
+
+    response_data = {
+        "message": "Answer submitted successfully",
+        "results": results,
+        "completedUseCases": completed_use_cases,
+        "totalUseCases": total_use_cases,
+        "isComplete": next_use_case is None,
+    }
+
     if next_use_case:
         first_question = get_first_question_of_use_case(next_use_case.id)
-        next_use_case_data = {
+        response_data["nextUseCase"] = {
             "useCaseId": next_use_case.id,
             "description": next_use_case.description,
             "firstQuestion": prepare_first_question_data(first_question),
+            "lessonId": next_use_case.lesson_id,
         }
-        return (
-            jsonify(
-                {
-                    "message": "Answer submitted successfully",
-                    "isCorrect": is_correct,
-                    "nextUseCase": next_use_case_data,
-                }
-            ),
-            200,
-        )
-    else:
-        return jsonify({"message": "No more use cases"}), 200
+        response_data["isSimilarUseCase"] = is_similar_use_case
+
+    return jsonify(response_data), 200
