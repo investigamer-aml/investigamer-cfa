@@ -281,27 +281,25 @@ def get_current_use_case(user_id, lesson_id):
     Returns:
         UseCases | None: The first uncompleted use case or None if all are completed.
     """
-    # Get the IDs of use cases the user has completed in this lesson
-    completed_use_cases = (
-        db.session.query(UserAnswers.use_case_id)
-        .filter(
-            UserAnswers.user_id == user_id,
-            UserAnswers.lesson_id == lesson_id,
-            UserAnswers.is_correct,
-        )
-        .distinct()
-        .subquery()
+    # Get all use cases for the lesson
+    lesson_use_cases = (
+        UseCases.query.filter_by(lesson_id=lesson_id).order_by(UseCases.id).all()
     )
 
-    # Find the first uncompleted use case in the current lesson
-    current_use_case = (
-        UseCases.query.filter_by(lesson_id=lesson_id)
-        .filter(~UseCases.id.in_(select(completed_use_cases)))
-        .order_by(UseCases.id)
-        .first()
-    )
+    # Get the user's answers for this lesson
+    user_answers = UserAnswers.query.filter_by(
+        user_id=user_id, lesson_id=lesson_id
+    ).all()
 
-    return current_use_case
+    # Create a dict of use case IDs to their correct answer status
+    use_case_status = {ua.use_case_id: ua.is_correct for ua in user_answers}
+
+    # Find the first use case that hasn't been attempted or hasn't been answered correctly
+    for use_case in lesson_use_cases:
+        if use_case.id not in use_case_status or not use_case_status[use_case.id]:
+            return use_case
+
+    return None  # All use cases have been completed correctly
 
 
 def get_current_lesson(user_id):
