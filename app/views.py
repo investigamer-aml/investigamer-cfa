@@ -125,3 +125,43 @@ def admin():
         use_cases = UseCases.query.filter_by(created_by_user=current_user.id).all()
 
     return render_template("admin.html", use_cases=use_cases)
+
+
+# @app.route("/api/admin/dashboard")
+# @login_required
+# def admin_dashboard():
+#     if not current_user.is_admin:
+#         return jsonify({"error": "Unauthorized"}), 403
+
+#     total_users = Users.query.count()
+
+#     avg_progression = db.session.query(func.avg(UserLessonInteraction.progress)).scalar() or 0
+
+#     avg_score = db.session.query(func.avg(UserLessonInteraction.score)).scalar() or 0
+
+#     total_lessons = Lessons.query.count()
+#     completed_lessons = UserLessonInteraction.query.filter_by(completed=True).count()
+#     lesson_completion = (completed_lessons / (total_lessons * total_users)) * 100 if total_users > 0 else 0
+
+#     role_distribution = db.session.query(
+#         Users.use_case_difficulty,
+#         func.count(Users.id).label('count'),
+#         func.avg(UserLessonInteraction.progress).label('progression')
+#     ).join(UserLessonInteraction, Users.id == UserLessonInteraction.user_id, isouter=True)\
+#      .group_by(Users.use_case_difficulty).all()
+
+#     role_data = [
+#         {
+#             "role": role,
+#             "count": count,
+#             "progression": float(progression or 0)
+#         } for role, count, progression in role_distribution
+#     ]
+
+#     return jsonify({
+#         "userCount": total_users,
+#         "avgProgression": float(avg_progression),
+#         "avgScore": float(avg_score),
+#         "lessonCompletion": float(lesson_completion),
+#         "roleDistribution": role_data
+#     })
