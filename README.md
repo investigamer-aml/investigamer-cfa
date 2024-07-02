@@ -49,6 +49,10 @@ Here's a detailed implementation guide based on the steps I provided earlier:
    - Ensure that the user's progress is tracked correctly and they move on to the next lesson when they have completed all the use cases in the current lesson.
    - Test different scenarios, such as making multiple mistakes, completing lessons successfully, and navigating through different lessons.
 
-Remember to handle edge cases and error scenarios appropriately throughout the implementation.
 
-Let me know if you have any further questions or if you need assistance with any specific part of the implementation.
+# Loading a new db version
+- sudo -u postgres psql
+- DROP DATABASE ig_data_admin;
+- CREATE DATABASE ig_data_admin;
+- sudo -u postgres psql ig_data_admin < investigamer.sql
+- psql -h localhost -U postgres -d ig_data_admin
