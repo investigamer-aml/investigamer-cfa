@@ -55,7 +55,7 @@ def register():
     return jsonify({"message": "User created successfully"}), 201
 
 
-@app.route("/register", methods=["GET"])
+@app.route("/api/register", methods=["GET"])
 def show_register():
     """
     Display the registration page.

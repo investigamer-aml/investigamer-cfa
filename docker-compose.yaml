@@ -18,10 +18,12 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - FLASK_ENV=production
-      - DATABASE_URL=postgresql://data_admin:investigamer@db:5432/ig_data_admin
+      - FLASK_ENV=DevelopmentConfig
+      - DATABASE_URI=postgresql://data_admin:investigamer@db:5432/ig_data_admin
+      - SECRET_KEY=d21d79ac7f6da6b7c3992ea3d577bc973dfa39c0f8ba63c5
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   db:
     image: postgres:15.6
@@ -32,10 +34,11 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "data_admin"]
+      test: ["CMD-SHELL", "pg_isready -U data_admin -d ig_data_admin"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
 
 volumes:
   postgres_data:
