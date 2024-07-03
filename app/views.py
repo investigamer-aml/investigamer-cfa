@@ -16,7 +16,7 @@ auth_bp = Blueprint("auth", __name__)
 
 
 ##### REGISTRATION #####
-@app.route("/register", methods=["POST"])
+@app.route("/api/register", methods=["POST"])
 def register():
     """
     Handle the user registration process. Collects data from form, validates,
