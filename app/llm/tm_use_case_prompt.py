@@ -35,6 +35,13 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
 
 3. Transaction Data:
    - Generate 6 months of detailed daily transaction data
+   - Each transaction should include:
+     * Date
+     * Description
+     * Amount
+     * Country (use "Netherlands" for local transactions)
+     * Merchant (use specific merchant names)
+     * Type ("incoming" or "outgoing")
    - Include transactions with believable local Dutch merchants for day-to-day expenses
    - For retail accounts: Focus on personal expenses (groceries, dining, entertainment, etc.)
    - For business accounts: Include business-related expenses and payments, using real company names
@@ -42,9 +49,9 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - For freelance business accounts: Vary salary amounts and payment intervals
    - Include regular patterns for all relevant expense categories
    - Inject suspicious transactions/patterns based on difficultyLevel and suspiciousPattern:
-     * Easy: 2-3 suspicious activity
-     * Medium: 4-5 suspicious activities
-     * Hard: 5-10 suspicious activities or complex patterns
+     * Easy: 1 suspicious activity
+     * Medium: 2-3 suspicious activities
+     * Hard: 4-5 suspicious activities or complex patterns
    - Randomly determine frequency of suspicious activities based on difficultyLevel
    - If suspiciousPattern is specified, incorporate the following behaviors:
      a. "fast-in-fast-out":
@@ -110,12 +117,26 @@ Output Format:
 Generate a JSON object containing:
 - Persona details (including background story and previous flagging status)
 - Financial profile
-- 6-month transaction data (always included, with local merchant names and day-to-day expenses)
+- 6-month transaction data (always included), each transaction containing:
+  * Date
+  * Description
+  * Amount
+  * Country
+  * Merchant
+  * Type (incoming/outgoing)
 - Suspicious activity details (including specified suspiciousPattern if any)
 - Context and explanation
 - Analyst decision criteria (non-repetitive and appropriately complex)
 - Difficulty level and score
-- Auxiliary data (12-month category averages, if showAuxiliaryData is true)
+- Auxiliary data (6-month category averages, if showAuxiliaryData is true)
 
 Ensure all numerical data is formatted consistently (e.g., use of decimal points, thousands separators)
+
+
+GenerateKYCTestScenario(
+"showAuxiliaryData": "true",
+"decisionOutcome: "escalate",
+"difficultyLevel": "medium",
+"accountType": "retail",
+"suspiciousPattern": "high-volume-suspicious-countries")
 """
