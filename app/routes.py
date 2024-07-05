@@ -6,6 +6,7 @@ from flask import current_app as app
 from flask import jsonify, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_required
 from markupsafe import Markup
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func, or_, select
 
 from app import db, login_manager
@@ -403,3 +404,48 @@ def update_lesson_progress(user_id, lesson_id, progress, score=None):
     db.session.commit()
 
     return interaction
+
+
+# LLMs training internal tool
+@app.route("/api/use-cases", methods=["GET"])
+def get_use_cases():
+    use_cases = UseCases.query.filter_by(
+        lesson_id=3
+    ).all()  # temporary filter to ignore old use cases
+    use_case_data = []
+    for use_case in use_cases:
+        use_case_data.append(
+            {
+                "id": use_case.id,
+                "description": use_case.description,
+                "type": use_case.type,
+                "difficulty_id": use_case.difficulty_id,
+                "risk_factors": use_case.risk_factors,
+                "lesson_id": use_case.lesson_id,
+                "created_by_user": use_case.created_by_user,
+            }
+        )
+    return jsonify(use_case_data)
+
+
+@app.route("/api/use-cases", methods=["POST"])
+def create_use_case():
+    try:
+        data = request.get_json()
+        new_use_case = UseCases(
+            description=data["description"],
+            type=data["type"],
+            difficulty_id=data["difficulty_id"],
+            risk_factors=data["risk_factors"],
+            lesson_id=data["lesson_id"],
+            created_by_user=current_user.id,
+        )
+        db.session.add(new_use_case)
+        db.session.commit()
+        return jsonify({"message": "Use case created successfully"}), 201
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({"error": "Integrity error", "details": str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "An error occurred", "details": str(e)}), 500
