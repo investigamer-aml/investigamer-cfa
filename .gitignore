@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-investigamer/
+investigamer/*
+investigamer-cfa/*
+investigamer-cfa/bin/*
 __pycache__//
 
 # dependencies
