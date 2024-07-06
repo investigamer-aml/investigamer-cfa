@@ -29,9 +29,20 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - Previously flagged: [Randomly determine based on difficultyLevel, more likely for higher difficulties]
 
 2. Financial Profile:
-   - Monthly income: [€2,000 - €10,000 for retail, €5,000 - €50,000 for business]
-   - Savings balance: [€1,000 - €100,000 for retail, €10,000 - €500,000 for business]
-   - Investment portfolio: [Yes/No, if Yes: €5,000 - €500,000 for retail, €50,000 - €2,000,000 for business]
+   - Monthly income:
+     - €2,000 - €10,000 for retail
+     - €5,000 - €50,000 for business
+     - €3,000 - €20,000 for freelance/self-employed (classified as Business)
+
+   - Savings balance:
+     - €1,000 - €100,000 for retail
+     - €10,000 - €500,000 for business
+     - Freelance/Self-employed: [€5,000 - €250,000] (classified as Business)
+
+   - Investment portfolio:
+     - Yes/No, if Yes: €5,000 - €500,000 for retail
+     - €50,000 - €2,000,000 for business
+     - Freelance/Self-employed: [€10,000 - €1,000,000] (classified as Business)
 
 3. Transaction Data:
    - Generate 6 months of detailed daily transaction data
@@ -49,9 +60,9 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - For freelance business accounts: Vary salary amounts and payment intervals
    - Include regular patterns for all relevant expense categories
    - Inject suspicious transactions/patterns based on difficultyLevel and suspiciousPattern:
-     * Easy: 1 suspicious activity
-     * Medium: 2-3 suspicious activities
-     * Hard: 4-5 suspicious activities or complex patterns
+     * Easy: 2-3 suspicious activity
+     * Medium: 3-5 suspicious activities
+     * Hard: 5-8 suspicious activities or complex patterns
    - Randomly determine frequency of suspicious activities based on difficultyLevel
    - If suspiciousPattern is specified, incorporate the following behaviors:
      a. "fast-in-fast-out":
@@ -65,6 +76,14 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
         - Frequent transactions with entities in SUSPICIOUS_COUNTRIES
         - Varying transaction amounts to avoid consistent patterns
         - Use real, well-known international company names for these transactions
+
+    - For business accounts:
+      - Include business-related expenses and payments, using real company names
+      - For traditional businesses: Use consistent payment amounts and intervals for major clients
+      - For freelance/self-employed:
+        - Vary payment amounts and intervals to reflect project-based work
+        - Include a mix of personal and business expenses
+        - Use a combination of individual client names and company names for incoming payments
 
 4. Suspicious Activity:
    - Types: [Large deposit, Unusual withdrawal, Frequent small transactions, International transfer, Cash deposits, etc.]
@@ -112,6 +131,9 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - If a suspiciousPattern is specified, ensure it is prominently featured in the transaction data
    - Verify that the transaction data feels realistic, mimicking a real bank app's level of detail
    - For business accounts, ensure the use of real, well-known international company names where appropriate
+   - Ensure that freelance and self-employed individuals are correctly classified as business accounts
+   - For freelance/self-employed business accounts, verify that the transaction patterns reflect the irregular nature of project-based income and expenses
+   - Check that the financial profile and transaction data are consistent with the specific type of business account (traditional business vs. freelance/self-employed)
 
 Output Format:
 Generate a JSON object containing the following structure. All fields must be present, even if some are null or empty arrays:
