@@ -204,7 +204,49 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - International transfers
    - Cash withdrawals/deposits
 
-10. Quality Assurance:
+10. Calculating 6-Month Averages for Auxiliary Data
+    - Calculating Auxiliary Data Averages:
+      - For each category, use the following methods to calculate the 6-month averages:
+        a. Daily Expenses (groceries, dining out):
+           - Sum all transactions labeled as groceries or dining out over 6 months
+           - Divide the sum by 180 (average days in 6 months)
+
+        b. Housing (rent/mortgage, utilities):
+           - Sum all housing-related expenses over 6 months
+           - Divide by 6 to get the monthly average
+
+        c. Transportation:
+           - Sum all transportation-related expenses (fuel, public transport, car payments) over 6 months
+           - Divide by 6 to get the monthly average
+
+        d. Healthcare:
+           - Sum all healthcare-related expenses over 6 months
+           - Divide by 6 to get the monthly average
+
+        e. Entertainment:
+           - Sum all entertainment-related expenses over 6 months
+           - Divide by 6 to get the monthly average
+
+        f. Savings/Investments:
+           - Calculate the net increase in savings and investment accounts over 6 months
+           - Divide by 6 to get the monthly average
+
+        g. International Transfers:
+           - Sum the absolute value of all international transfers (both incoming and outgoing) over 6 months
+           - Divide by 6 to get the monthly average
+
+        h. Cash Withdrawals/Deposits:
+           - Sum the absolute value of all cash withdrawals and deposits over 6 months
+           - Divide by 6 to get the monthly average
+
+   - General Formula:
+     - Monthly Average = (Sum of all relevant transactions over 6 months) / 6
+   - Notes:
+     - Ensure that the averages are consistent with the persona's financial profile and transaction patterns
+     - For business accounts, adjust the calculations to reflect business-specific patterns (e.g., higher transaction volumes, regular large payments)
+     - For categories with irregular expenses (like healthcare or international transfers), consider using a weighted average that accounts for months with unusually high or low activity
+
+11. Quality Assurance:
    - Ensure all data is realistic and consistent for the Dutch context
    - Verify that suspicious activities align with the given decisionOutcome and suspiciousPattern
    - Confirm that the scenario difficulty matches the provided difficultyLevel
@@ -281,14 +323,14 @@ Generate a JSON object containing the following structure. All fields must be pr
     "score": "number (1-10)"
   },
   "auxiliaryData": {
-    "dailyExpenses": "number",
-    "housing": "number",
-    "transportation": "number",
-    "healthcare": "number",
-    "entertainment": "number",
-    "savingsInvestments": "number",
-    "internationalTransfers": "number",
-    "cashWithdrawalsDeposits": "number"
+    "dailyExpenses": "number (monthly average)",
+    "housing": "number (monthly average)",
+    "transportation": "number (monthly average)",
+    "healthcare": "number (monthly average)",
+    "entertainment": "number (monthly average)",
+    "savingsInvestments": "number (monthly average)",
+    "internationalTransfers": "number (monthly average)",
+    "cashWithdrawalsDeposits": "number (monthly average)"
   }
 }
 
