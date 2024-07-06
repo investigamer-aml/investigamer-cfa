@@ -4,7 +4,7 @@ This is a prompt for the LLM to generate use cases for the Investigamer CFA.
 
 
 prompt = """
-Function: GenerateKYCTestScenario
+Function: GenerateTMTestScenario
 
 Input Parameters:
 1. showAuxiliaryData: boolean (true/false)
@@ -86,14 +86,44 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
         - Use a combination of individual client names and company names for incoming payments
 
 4. Suspicious Activity:
-   - Types: [Large deposit, Unusual withdrawal, Frequent small transactions, International transfer, Cash deposits, etc.]
-   - Ensure adherence to ATM_WITHDRAWAL_ALERT_THRESHOLD for cash withdrawals/deposits
+
+   - Types: Use the specific suspiciousPattern provided in the input parameter. Possible values are:
+     - "none": No suspicious activity (for control scenarios)
+     - "fast-in-fast-out": Large deposits followed by rapid withdrawals or transfers
+     - "large-atm-withdrawals": Multiple ATM withdrawals near or exceeding the ATM_WITHDRAWAL_ALERT_THRESHOLD
+     - "high-volume-suspicious-countries": Frequent transactions with entities in SUSPICIOUS_COUNTRIES
+
+   - For each type, incorporate the following behaviors:
+     - "fast-in-fast-out":
+       - Large deposits followed by rapid withdrawals or transfers
+       - Minimal time between incoming and outgoing transactions
+       - Include high incoming payment before cash withdrawals
+     - "large-atm-withdrawals":
+       - Multiple ATM withdrawals near or exceeding the ATM_WITHDRAWAL_ALERT_THRESHOLD (10,000 euros)
+       - Withdrawals from different locations in short time periods
+     - "high-volume-suspicious-countries":
+       - Frequent transactions with entities in SUSPICIOUS_COUNTRIES
+       - Varying transaction amounts to avoid consistent patterns
+       - Use real, well-known international company names for these transactions
+
+   - Ensure adherence to ATM_WITHDRAWAL_ALERT_THRESHOLD (10,000 euros accumulative within a short time) for cash withdrawals/deposits
    - Amount and frequency should deviate from normal patterns
    - For large transactions, ensure proportionality to monthly income
-   - Timing: Distribute within the 6-month period
-   - Incorporate the specified suspiciousPattern if provided
+   - Timing: Distribute suspicious activities within the 6-month period
+   - Number of suspicious transactions/patterns based on difficultyLevel and suspiciousPattern:
+      * Easy: 2-3 suspicious activity
+      * Medium: 3-5 suspicious activities
+      * Hard: 5-8 suspicious activities or complex patterns
+
+   - Randomly determine frequency of suspicious activities based on difficultyLevel
    - For cash withdrawals, consider travel patterns in the persona's background
    - For cash deposits, treat as more suspicious than withdrawals
+
+   Additional considerations:
+   - Ensure that the suspicious activity aligns with the account type (retail or business)
+   - For business accounts, especially freelance/self-employed, adjust patterns to fit with expected business operations
+   - Consider the persona's background story when crafting suspicious activities
+   - For higher difficulty levels, combine multiple suspicious elements or create more subtle patterns
 
 5. Context and Explanation:
    - Provide a coherent explanation for the suspicious activity
@@ -135,6 +165,8 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - For freelance/self-employed business accounts, verify that the transaction patterns reflect the irregular nature of project-based income and expenses
    - Check that the financial profile and transaction data are consistent with the specific type of business account (traditional business vs. freelance/self-employed)
 
+Note: When the accountType parameter is set to "business", the scenario generator should randomly decide whether it's a traditional business or a freelance/self-employed individual, and adjust the financial profile and transaction patterns accordingly.
+
 Output Format:
 Generate a JSON object containing the following structure. All fields must be present, even if some are null or empty arrays:
 
@@ -166,11 +198,11 @@ Generate a JSON object containing the following structure. All fields must be pr
     }
   ],
   "suspiciousActivity": {
-    "types": ["string"],
-    "timing": ["string"],
-    "amounts": ["number"],
-    "pattern": "string",
-    "frequencies": ["number"]
+    "types": ["string"], // List of suspicious activity types based on the given suspiciousPattern
+    "timing": ["string"], // List of time periods when suspicious activities occurred
+    "amounts": ["number"], // List of amounts involved in suspicious activities
+    "pattern": "string", // The specific suspiciousPattern provided in the input
+    "frequencies": ["number"] // List of frequencies for each type of suspicious activity
   },
   "context": "string",
   "analystDecision": {
