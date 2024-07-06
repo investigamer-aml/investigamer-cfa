@@ -114,7 +114,63 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - For business accounts, ensure the use of real, well-known international company names where appropriate
 
 Output Format:
-Generate a JSON object containing:
+Generate a JSON object containing the following structure. All fields must be present, even if some are null or empty arrays:
+
+{
+  "persona": {
+    "name": "string",
+    "age": "number",
+    "occupation": "string",
+    "familyStatus": "string",
+    "background": "string",
+    "previouslyFlagged": "boolean"
+  },
+  "financialProfile": {
+    "monthlyIncome": "number",
+    "savingsBalance": "number",
+    "investmentPortfolio": {
+      "hasInvestments": "boolean",
+      "investmentAmount": "number"
+    }
+  },
+  "transactionData": [
+    {
+      "date": "string (YYYY-MM-DD)",
+      "description": "string",
+      "amount": "number",
+      "country": "string",
+      "merchant": "string",
+      "type": "string (incoming or outgoing)"
+    }
+  ],
+  "suspiciousActivity": {
+    "types": ["string"],
+    "timing": ["string"],
+    "amounts": ["number"],
+    "pattern": "string",
+    "frequencies": ["number"]
+  },
+  "context": "string",
+  "analystDecision": {
+    "action": "string (escalate or close)",
+    "keyFactors": ["string"]
+  },
+  "difficultyLevel": {
+    "level": "string (easy, medium, hard)",
+    "score": "number (1-10)"
+  },
+  "auxiliaryData": {
+    "dailyExpenses": "number",
+    "housing": "number",
+    "transportation": "number",
+    "healthcare": "number",
+    "entertainment": "number",
+    "savingsInvestments": "number",
+    "internationalTransfers": "number",
+    "cashWithdrawalsDeposits": "number"
+  }
+}
+
 - Persona details (including background story and previous flagging status)
 - Financial profile
 - 6-month transaction data (always included), each transaction containing:
