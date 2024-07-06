@@ -30,19 +30,21 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
 
 2. Financial Profile:
    - Monthly income:
-     - €2,000 - €10,000 for retail
-     - €5,000 - €50,000 for business
-     - €3,000 - €20,000 for freelance/self-employed (classified as Business)
+     - Retail: [€2,000 - €10,000]
+     - Business: [€5,000 - €50,000]
+     - Business (freelance/self-employed): [€3,000 - €20,000]
 
    - Savings balance:
-     - €1,000 - €100,000 for retail
-     - €10,000 - €500,000 for business
-     - Freelance/Self-employed: [€5,000 - €250,000] (classified as Business)
+     - Retail: [€1,000 - €100,000]
+     - Business: [€10,000 - €500,000]
+     - Business (freelance/self-employed): [€5,000 - €250,000]
 
    - Investment portfolio:
-     - Yes/No, if Yes: €5,000 - €500,000 for retail
-     - €50,000 - €2,000,000 for business
-     - Freelance/Self-employed: [€10,000 - €1,000,000] (classified as Business)
+     - Retail:
+       - Presence: Yes/No
+       - If Yes: [€5,000 - €500,000]
+     - Business: [€50,000 - €2,000,000]
+     - Business (freelance/self-employed): [€10,000 - €1,000,000]
 
 3. Transaction Data:
    - Generate 6 months of detailed daily transaction data
