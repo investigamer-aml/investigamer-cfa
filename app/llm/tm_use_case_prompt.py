@@ -11,7 +11,7 @@ Input Parameters:
 2. decisionOutcome: string ("escalate" or "close")
 3. difficultyLevel: string ("easy", "medium", "hard")
 4. accountType: string ("retail", "business")
-5. suspiciousPattern: string ("none", "fast-in-fast-out", "large-atm-withdrawals", "high-volume-suspicious-countries")
+5. suspiciousPattern: string ("fast-in-fast-out", "large-atm-withdrawals", "high-volume-suspicious-countries")
 
 **Clarify Business Account Types**
 When the accountType parameter is set to "business", randomly select one of the following subtypes:
@@ -105,7 +105,6 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
 4. Suspicious Activity:
 
    - Types: Use the specific suspiciousPattern provided in the input parameter. Possible values are:
-     - "none": No suspicious activity (for control scenarios)
      - "fast-in-fast-out": Large deposits followed by rapid withdrawals or transfers
      - "large-atm-withdrawals": Multiple ATM withdrawals near or exceeding the ATM_WITHDRAWAL_ALERT_THRESHOLD
      - "high-volume-suspicious-countries": Frequent transactions with entities in SUSPICIOUS_COUNTRIES
@@ -146,13 +145,16 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - Provide a coherent explanation for the suspicious activity
    - Include relevant Dutch cultural, economic, or regulatory factors
    - Align the explanation with the given decisionOutcome
-   - If a suspiciousPattern is specified, include relevant details in the context
+   - Include details relevant to the specified suspiciousPattern
+   - For easy difficulty, make the pattern more obvious in the explanation
+   - For higher difficulties, introduce more complexity and potential mitigating factors in the explanation
    - Incorporate the persona's background story into the explanation
 
 6. Analyst Decision:
    - Correct action: Use the provided decisionOutcome
-   - Key factors to consider: [List 3-5 non-repetitive, critical points, including aspects of the suspiciousPattern if specified]
-   - For complex patterns, ensure the factors reflect the intricacy of the situation
+   - Key factors to consider: [List 1-5 non-repetitive, critical points, including aspects of the suspiciousPattern if specified]
+   - For easy difficulty, make the decision factors more straightforward
+   - For hard difficulty, ensure the factors reflect the intricacy of the situation and include potential mitigating circumstances
 
 7. Difficulty Level:
    - Use the provided difficultyLevel
