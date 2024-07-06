@@ -13,6 +13,11 @@ Input Parameters:
 4. accountType: string ("retail", "business")
 5. suspiciousPattern: string ("none", "fast-in-fast-out", "large-atm-withdrawals", "high-volume-suspicious-countries")
 
+**Clarify Business Account Types**
+When the accountType parameter is set to "business", randomly select one of the following subtypes:
+   1. Traditional Business (80% probability)
+   2. Freelance/Self-employed (20% probability)
+
 Constants:
 - ATM_WITHDRAWAL_ALERT_THRESHOLD: 10000 (in euros, accumulative within a short time)
 - SUSPICIOUS_COUNTRIES: [List of countries known for financial risk]
@@ -21,6 +26,12 @@ Constants:
 Generate a KYC/TM test scenario for the Dutch financial context based on the following rules and input parameters:
 
 1. Persona Generation:
+   - Occupation
+     - If accountType is "retail": [Generate relevant Dutch job title]
+   - If accountType is "business":
+      - For Traditional Business: [Generate job title such as "Business Owner", "CEO", "Managing Director"]
+      - For Freelance/Self-employed: [Generate job title such as "Freelance Designer", "Self-employed Consultant", "Independent Contractor"]
+
    - Name: [Generate Dutch first and last name]
    - Age: [25-75]
    - Occupation: [Relevant Dutch job title, matching accountType]
@@ -80,12 +91,16 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
         - Use real, well-known international company names for these transactions
 
     - For business accounts:
-      - Include business-related expenses and payments, using real company names
-      - For traditional businesses: Use consistent payment amounts and intervals for major clients
+      - Traditional Business:
+        - Include regular, consistent payments from major clients
+        - Add business-related expenses (e.g., inventory, payroll, rent) using real company names
+        - Use real company names for both incoming and outgoing transactions
+
       - For freelance/self-employed:
-        - Vary payment amounts and intervals to reflect project-based work
-        - Include a mix of personal and business expenses
+        - Include irregular, project-based incoming payments
+        - Mix personal and business expenses
         - Use a combination of individual client names and company names for incoming payments
+        - Include business-related expenses (e.g., equipment, software subscriptions, home office)
 
 4. Suspicious Activity:
 
