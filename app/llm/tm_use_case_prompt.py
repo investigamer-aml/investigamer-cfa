@@ -161,7 +161,39 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - Assign a score: Easy (1-3), Medium (4-7), Hard (8-10)
    - For hard difficulty, ensure patterns are complex and not immediately obvious
 
-8. Auxiliary Data (if showAuxiliaryData is true):
+8. Difficulty Level Scoring:
+   - Easy (1-3):
+     - Score 1: Very obvious suspicious pattern, minimal transaction complexity
+     - Score 2: Clear suspicious pattern, slight increase in transaction volume
+     - Score 3: Noticeable suspicious pattern, introduction of minor complexities
+   - Medium (4-7):
+     - Score 4: Suspicious pattern requires some analysis, increased transaction volume
+     - Score 5: Pattern is less obvious, requires correlation between multiple transactions
+     - Score 6: Introduction of potential mitigating factors, higher complexity in transaction patterns
+     - Score 7: Multiple subtle instances of suspicious pattern, requires thorough investigation
+   - Hard (8-10):
+     - Score 8: Complex implementation of suspicious pattern, high volume of transactions
+     - Score 9: Very subtle pattern implementation, potential legitimate explanations present
+     - Score 10: Extremely complex scenario, multiple intertwined patterns, highest level of analysis required
+
+   - Scoring Guidelines:
+     1. Base Score: Start with the middle score of the difficulty level (Easy: 2, Medium: 5, Hard: 9)
+     2. Adjust based on:
+       - Number of suspicious transactions (+1 for more, -1 for fewer)
+       - Complexity of the pattern implementation (+1 for more complex, -1 for simpler)
+       - Presence of mitigating factors or potential legitimate explanations (+1 if present)
+       - Volume and complexity of overall transactions (+1 for higher, -1 for lower)
+     3. Ensure the final score remains within the range for the chosen difficulty level
+
+   - Usage in Scenario Generation:
+     - Use the score to fine-tune the complexity of the generated scenario
+     - Higher scores within each difficulty level should correspond to:
+       - More sophisticated implementation of the suspicious pattern
+       - Increased overall transaction volume and complexity
+       - More nuanced context and potential explanations
+       - More challenging analyst decision factors
+
+9. Auxiliary Data (if showAuxiliaryData is true):
    Include 6-month averages for the following categories:
    - Daily expenses (groceries, dining out)
    - Housing (rent/mortgage, utilities)
@@ -172,7 +204,7 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - International transfers
    - Cash withdrawals/deposits
 
-9. Quality Assurance:
+10. Quality Assurance:
    - Ensure all data is realistic and consistent for the Dutch context
    - Verify that suspicious activities align with the given decisionOutcome and suspiciousPattern
    - Confirm that the scenario difficulty matches the provided difficultyLevel
@@ -187,6 +219,22 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
 Note: When the accountType parameter is set to "business", the scenario generator should randomly decide whether it's a traditional business or a freelance/self-employed individual, and adjust the financial profile and transaction patterns accordingly.
 
 Output Format:
+
+- Persona details (including background story and previous flagging status)
+- Financial profile
+- 6-month transaction data (always included), each transaction containing:
+  * Date
+  * Description
+  * Amount
+  * Country
+  * Merchant
+  * Type (incoming/outgoing)
+- Suspicious activity details (including specified suspiciousPattern if any)
+- Context and explanation
+- Analyst decision criteria (non-repetitive and appropriately complex)
+- Difficulty level and score
+- Auxiliary data (6-month category averages, if showAuxiliaryData is true)
+
 Generate a JSON object containing the following structure. All fields must be present, even if some are null or empty arrays:
 
 {
@@ -243,21 +291,6 @@ Generate a JSON object containing the following structure. All fields must be pr
     "cashWithdrawalsDeposits": "number"
   }
 }
-
-- Persona details (including background story and previous flagging status)
-- Financial profile
-- 6-month transaction data (always included), each transaction containing:
-  * Date
-  * Description
-  * Amount
-  * Country
-  * Merchant
-  * Type (incoming/outgoing)
-- Suspicious activity details (including specified suspiciousPattern if any)
-- Context and explanation
-- Analyst decision criteria (non-repetitive and appropriately complex)
-- Difficulty level and score
-- Auxiliary data (6-month category averages, if showAuxiliaryData is true)
 
 Ensure all numerical data is formatted consistently (e.g., use of decimal points, thousands separators)
 
