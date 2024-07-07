@@ -760,6 +760,52 @@ To protect privacy and prevent the exposure of sensitive information, follow the
 Consistency: Ensure that once a sanitized name or identifier is used for an entity, it is used consistently throughout the scenario.
 When using placeholder data, make sure it's clearly distinguishable as fictional to prevent any confusion with real entities.
 
+
+## 15. Performance Considerations
+
+When implementing the KYC/TM Test Scenario Generator, consider the following performance aspects:
+
+1. Computational Complexity:
+   - The overall complexity is O(n), where n is the number of transactions generated.
+   - Expect the runtime to increase linearly with the number of transactions and the difficulty level.
+
+2. Expected Runtime:
+   - Easy scenarios: Typically < 1 second
+   - Medium scenarios: Typically 1-3 seconds
+   - Hard scenarios: Typically 3-7 seconds
+   Note: Actual runtimes may vary based on the implementation and hardware used.
+
+3. Memory Usage:
+   - Memory usage is primarily determined by the number of transactions generated.
+   - Estimate: Approximately 1KB per transaction, plus overhead for persona and context data.
+
+4. Scaling Considerations:
+   - For bulk scenario generation, consider implementing parallel processing.
+   - If generating large numbers of scenarios, implement batching to manage memory usage.
+
+5. Database Interactions:
+   - If using a database to store predefined data (e.g., company names, bank lists), ensure efficient querying.
+   - Consider caching frequently used data to reduce database load.
+
+6. Random Number Generation:
+   - Use a high-quality random number generator to ensure scenario variability.
+   - Be aware that extensive use of randomization may impact performance.
+
+7. Difficulty Level Impact:
+   - Higher difficulty levels require more complex logic and may take longer to generate.
+   - Easy: ~100-200 transactions
+   - Medium: ~200-400 transactions
+   - Hard: ~400-800 transactions
+
+8. Optimization Tips:
+   - Precompute and cache common elements (e.g., date ranges, recurring transaction templates).
+   - Use efficient data structures (e.g., hash maps for quick lookups of predefined data).
+   - Implement lazy evaluation where possible, especially for auxiliary data calculations.
+
+
+Performance Monitoring: Implement logging and monitoring to track generation times and resource usage. This will help identify bottlenecks and opportunities for optimization.
+
+
 <important>
 Ensure all numerical data is formatted consistently (e.g., use of decimal points, thousands separators)
 </important>
