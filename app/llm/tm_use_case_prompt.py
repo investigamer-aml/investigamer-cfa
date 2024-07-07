@@ -157,7 +157,69 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
       - Ensure recurring transactions (e.g., rent, subscriptions) occur on consistent dates each month
       - Avoid generating transactions on inappropriate days (e.g., no business transactions on public holidays)
 
-   3.2 Stats
+   3.2 Statistical Guidelines for Transaction Data:
+
+      1. Transaction Amount Distributions:
+         a. Retail Accounts:
+            SMALL_TRANS_RETAIL = {range: [0, 50], percentage: [50, 60]}
+            MEDIUM_TRANS_RETAIL = {range: [50, 500], percentage: [30, 40]}
+            LARGE_TRANS_RETAIL = {range: [500, Infinity], percentage: [5, 15]}
+
+         b. Business Accounts (Traditional):
+            SMALL_TRANS_BUSINESS = {range: [0, 500], percentage: [30, 40]}
+            MEDIUM_TRANS_BUSINESS = {range: [500, 5000], percentage: [40, 50]}
+            LARGE_TRANS_BUSINESS = {range: [5000, Infinity], percentage: [15, 25]}
+
+         c. Business Accounts (Freelance/Self-employed):
+            SMALL_TRANS_FREELANCE = {range: [0, 100], percentage: [40, 50]}
+            MEDIUM_TRANS_FREELANCE = {range: [100, 1000], percentage: [35, 45]}
+            LARGE_TRANS_FREELANCE = {range: [1000, Infinity], percentage: [10, 20]}
+
+      2. Transaction Type Distribution:
+         INCOMING_TRANS_PERCENTAGE = [40, 60]
+         OUTGOING_TRANS_PERCENTAGE = [60, 40]
+
+      3. Recurring Transaction Patterns:
+         FIXED_RECURRING_RETAIL = {percentage: [5, 10]}
+         FIXED_RECURRING_BUSINESS = {percentage: [3, 7]}
+         VARIABLE_RECURRING_RETAIL = {percentage: [3, 7]}
+         VARIABLE_RECURRING_BUSINESS = {percentage: [2, 5]}
+
+      4. Day of Week Distribution:
+         a. Retail Accounts:
+            WEEKDAY_TRANS_RETAIL = {percentage: [60, 70]}
+            WEEKEND_TRANS_RETAIL = {percentage: [30, 40]}
+
+         b. Business Accounts:
+            WEEKDAY_TRANS_BUSINESS = {percentage: [80, 90]}
+            WEEKEND_TRANS_BUSINESS = {percentage: [10, 20]}
+
+      5. International Transaction Frequency:
+         INTERNATIONAL_TRANS_RETAIL = {percentage: [2, 10]}
+         INTERNATIONAL_TRANS_BUSINESS = {percentage: [5, 25]}
+
+      6. Cash Transaction Frequency:
+         CASH_TRANS_RETAIL = {percentage: [5, 15]}
+         CASH_TRANS_BUSINESS = {percentage: [1, 10]}
+
+      7. Transaction Description Variety:
+         MIN_UNIQUE_MERCHANTS_RETAIL = 50
+         MIN_UNIQUE_MERCHANTS_BUSINESS = 100
+
+      8. Balance Fluctuations:
+         // Ensure balance stays within realistic ranges and shows natural growth/decline
+
+      9. Seasonal Variations:
+         SEASONAL_INCREASE = {percentage: [10, 30]}
+
+      10. Correlation with Persona:
+         // Ensure transaction patterns align with persona's occupation, age, and background
+
+      Notes:
+      - Percentages are represented as ranges [min, max]
+      - All monetary values are in euros
+      - Adjust ranges as needed to fit specific scenarios and suspicious activity patterns
+      - For business accounts, adapt guidelines based on whether it's traditional or freelance/self-employed
 
 4. Suspicious Activity:
 
