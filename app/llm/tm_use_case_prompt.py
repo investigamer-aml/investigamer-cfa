@@ -1035,7 +1035,7 @@ Refer to this glossary for definitions of terms used throughout the document. Fo
 
 GenerateKYCTestScenario(
 "showAuxiliaryData": "true",
-"decisionOutcome: "escalate",
+"decisionOutcome": "escalate",
 "difficultyLevel": "medium",
 "accountType": "retail",
 "suspiciousPattern": "high-volume-suspicious-countries")
