@@ -834,7 +834,6 @@ Key Dutch-specific elements included in this generator:
 Ensure all numerical data is formatted consistently (e.g., use of decimal points, thousands separators)
 </important>
 
-
 ## 17. Testing Guidelines
 
 To ensure the quality and reliability of the generated KYC/TM test scenarios, implement the following testing strategies:
@@ -914,6 +913,60 @@ def test_retail_scenario_generation():
     assert scenario["difficultyLevel"]["level"] == "medium", "Difficulty level should match input"
     # Add more assertions as needed
 ```
+
+## 18. Regulatory Compliance
+
+Ensure that all generated scenarios comply with current Dutch and EU KYC/AML regulations. Key regulations to consider include:
+
+1. Dutch Money Laundering and Terrorist Financing (Prevention) Act (Wwft):
+   - Implement customer due diligence measures
+   - Include scenarios that test identification and verification procedures
+   - Generate cases that require enhanced due diligence (e.g., politically exposed persons)
+
+2. EU 5th Anti-Money Laundering Directive (AMLD5):
+   - Include scenarios involving virtual currencies
+   - Generate cases related to beneficial ownership transparency
+   - Create scenarios that test lower thresholds for customer due diligence on prepaid cards
+
+3. Financial Supervision Act (Wft):
+   - Ensure scenarios reflect proper conduct of business rules
+   - Include cases testing compliance with integrity requirements
+
+4. De Nederlandsche Bank (DNB) Guidelines:
+   - Align suspicious activity patterns with DNB's risk indicators
+   - Include scenarios testing transaction monitoring systems as per DNB expectations
+
+5. EU General Data Protection Regulation (GDPR):
+   - Ensure all generated personal data adheres to GDPR principles
+   - Include scenarios testing data minimization and purpose limitation
+
+6. EU Wire Transfer Regulation (2015/847):
+   - Generate scenarios involving cross-border wire transfers
+   - Include cases testing the inclusion of required information on payer and payee
+
+Specific Regulatory Considerations:
+
+- Politically Exposed Persons (PEPs):
+  * Generate scenarios involving Dutch and foreign PEPs
+  * Include cases requiring enhanced due diligence for PEPs
+
+- Ultimate Beneficial Owners (UBOs):
+  * Create scenarios testing the identification and verification of UBOs
+  * Include cases with complex ownership structures
+
+- Sanctions Screening:
+  * Generate scenarios involving entities or individuals on EU or Dutch sanctions lists
+  * Include cases testing sanctions evasion techniques
+
+- Unusual Transaction Reporting:
+  * Align suspicious activities with the indicators in the Dutch Unusual Transactions Reporting Guidelines
+  * Include scenarios that test the threshold for reporting unusual transactions
+
+- Risk-Based Approach:
+  * Generate scenarios that test the application of a risk-based approach to customer due diligence
+  * Include cases with varying risk levels requiring different levels of scrutiny
+
+Regularly update the scenario generator to reflect the latest changes in KYC/AML regulations. Stay informed about updates from De Nederlandsche Bank, the Dutch Financial Intelligence Unit (FIU-Netherlands), and EU regulatory bodies.
 
 GenerateKYCTestScenario(
 "showAuxiliaryData": "true",
