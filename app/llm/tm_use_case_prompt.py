@@ -835,6 +835,86 @@ Ensure all numerical data is formatted consistently (e.g., use of decimal points
 </important>
 
 
+## 17. Testing Guidelines
+
+To ensure the quality and reliability of the generated KYC/TM test scenarios, implement the following testing strategies:
+
+1. Unit Testing:
+   - Test each component of the scenario generator separately:
+     * Persona generation
+     * Financial profile creation
+     * Transaction data generation
+     * Suspicious activity injection
+   - Ensure each component produces valid outputs for various input combinations
+
+2. Integration Testing:
+   - Test the entire scenario generation process end-to-end
+   - Verify that all components work together coherently
+
+3. Validation Checks:
+   - Implement automated checks to validate:
+     * All required fields are present in the output
+     * Date ranges are correct (6 months of data)
+     * Transaction amounts are within realistic ranges for the given persona
+     * Suspicious activities match the specified pattern and difficulty level
+
+4. Dutch Context Validation:
+   - Verify that all generated data adheres to Dutch standards:
+     * Names are typically Dutch
+     * Banks and companies are real Dutch entities
+     * Addresses follow Dutch formats
+     * Currency is always in Euros
+
+5. Statistical Analysis:
+   - Run the generator multiple times and analyze the outputs to ensure:
+     * Proper distribution of transaction amounts
+     * Correct frequency of suspicious activities based on difficulty level
+     * Realistic variation in persona details
+
+6. Edge Case Testing:
+   - Test with extreme input values (e.g., very high difficulty, maximum transaction volumes)
+   - Verify handling of invalid inputs
+
+7. Consistency Checks:
+   - Ensure that repeated runs with the same input parameters produce scenarios of similar complexity and structure, even if specific details vary
+
+8. Performance Testing:
+   - Measure generation time for scenarios of different complexities
+   - Verify that performance meets the expectations outlined in the Performance Considerations section
+
+9. Regulatory Compliance:
+   - Periodically review generated scenarios against current Dutch and EU KYC/AML regulations
+   - Ensure that suspicious activity patterns remain relevant and realistic
+
+10. User Acceptance Testing:
+    - Have domain experts (e.g., experienced KYC/AML analysts) review generated scenarios for realism and usefulness in training contexts
+
+Sample Unit Test (Python with pytest):
+
+```python
+import pytest
+from scenario_generator import generate_tm_test_scenario
+
+def test_retail_scenario_generation():
+    input_params = {
+        "showAuxiliaryData": True,
+        "decisionOutcome": "escalate",
+        "difficultyLevel": "medium",
+        "accountType": "retail",
+        "suspiciousPattern": "large-atm-withdrawals"
+    }
+
+    scenario = generate_tm_test_scenario(input_params)
+
+    assert scenario["persona"]["name"], "Persona should have a name"
+    assert 25 <= scenario["persona"]["age"] <= 75, "Age should be between 25 and 75"
+    assert scenario["financialProfile"]["monthlyIncome"] >= 2000, "Monthly income should be at least 2000 EUR for retail"
+    assert len(scenario["transactionData"]) > 0, "Transaction data should not be empty"
+    assert scenario["suspiciousActivity"]["pattern"] == "large-atm-withdrawals", "Suspicious pattern should match input"
+    assert scenario["difficultyLevel"]["level"] == "medium", "Difficulty level should match input"
+    # Add more assertions as needed
+```
+
 GenerateKYCTestScenario(
 "showAuxiliaryData": "true",
 "decisionOutcome: "escalate",
