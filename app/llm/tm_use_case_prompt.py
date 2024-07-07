@@ -19,6 +19,7 @@ Version: 1.1.0
 - Expanded Regulatory Compliance section with specific Dutch and EU regulations
 - Added this Changelog
 - Added Glossary
+- Added cross-references
 
 ### Version 1.0.0
 - Initial release of the KYC/TM Test Scenario Generator Prompt
@@ -43,6 +44,12 @@ Version: 1.1.0
 12. [Quality Assurance](#12-quality-assurance)
 13. [Output Format](#13-output-format)
 14. [Error Handling](#14-error-handling)
+15. [Data Sanitization Guidelines](#15-data-sanitization-guidelines)
+16. [Performance Considerations](#16-performance-considerations)
+17. [Dutch Context Emphasis](#17-dutch-context-emphasis)
+18. [Testing Guidelines](#18-testing-guidelines)
+19. [Regulatory Compliance](#19-regulatory-compliance)
+20. [Glossary](#20-glossary)
 
 ## 1. Function Definition and Input Parameters
 
@@ -54,6 +61,11 @@ Input Parameters:
 3. difficultyLevel: string ("easy", "medium", "hard")
 4. accountType: string ("retail", "business")
 5. suspiciousPattern: string ("fast-in-fast-out", "large-atm-withdrawals", "high-volume-suspicious-countries")
+
+For details on how these parameters affect the scenario generation, see the following sections:
+- [Difficulty Level and Scoring](#10-difficulty-level-and-scoring)
+- [Suspicious Activity](#7-suspicious-activity)
+- [Auxiliary Data](#11-auxiliary-data)
 
 <important>
 Input Parameter Validation:
@@ -390,7 +402,10 @@ These examples demonstrate how the function generates scenarios of varying compl
 - All monetary values are in euros
 - Adjust ranges as needed to fit specific scenarios and suspicious activity patterns
 - For business accounts, adapt guidelines based on whether it's traditional or freelance/self-employed
+- When generating transaction data, ensure compliance with [Data Sanitization Guidelines](#15-data-sanitization-guidelines) and consider the [Performance Considerations](#16-performance-considerations).
+- For details on incorporating suspicious activities into the transaction data, refer to the [Suspicious Activity](#7-suspicious-activity) section.
 </note>
+
 
 ### 6.3 Dutch Cultural Elements
 
@@ -501,7 +516,9 @@ Additional considerations:
 - For business accounts, especially freelance/self-employed, adjust patterns to fit with expected business operations
 - Consider the persona's background story when crafting suspicious activities
 - For higher difficulty levels, combine multiple suspicious elements or create more subtle patterns
+- Ensure that the generated suspicious activities align with the [Regulatory Compliance](#19-regulatory-compliance) guidelines and the specified [Difficulty Level and Scoring](#10-difficulty-level-and-scoring).
 </note>
+
 
 ## 8. Context and Explanation
 
@@ -512,6 +529,7 @@ Additional considerations:
 - For easy difficulty, make the pattern more obvious in the explanation
 - For higher difficulties, introduce more complexity and potential mitigating factors in the explanation
 - Incorporate the persona's background story into the explanation
+- Ensure that the context and explanation align with the [Regulatory Compliance](#19-regulatory-compliance) requirements and reflect the [Dutch Context Emphasis](#17-dutch-context-emphasis). The explanation should be consistent with the [Difficulty Level and Scoring](#10-difficulty-level-and-scoring) of the scenario.
 
 ## 9. Analyst Decision
 
@@ -519,12 +537,14 @@ Additional considerations:
 - Key factors to consider: [List 1-5 non-repetitive, critical points, including aspects of the suspiciousPattern if specified]
 - For easy difficulty, make the decision factors more straightforward
 - For hard difficulty, ensure the factors reflect the intricacy of the situation and include potential mitigating circumstances
+- The analyst decision should be based on the [Suspicious Activity](#7-suspicious-activity) patterns and comply with [Regulatory Compliance](#19-regulatory-compliance) guidelines. Ensure the decision factors are appropriate for the [Difficulty Level and Scoring](#10-difficulty-level-and-scoring) of the scenario.
 
 ## 10. Difficulty Level and Scoring
 
 - Use the provided difficultyLevel
 - Assign a score: Easy (1-3), Medium (4-7), Hard (8-10)
 - For hard difficulty, ensure patterns are complex and not immediately obvious
+- The difficulty level affects various aspects of the scenario, including [Persona Generation](#4-persona-generation), [Financial Profile](#5-financial-profile), [Transaction Data](#6-transaction-data), and [Suspicious Activity](#7-suspicious-activity). For implementation details, refer to the [Performance Considerations](#16-performance-considerations) section.
 
 Scoring Guidelines:
 - Easy (1-3):
@@ -554,35 +574,35 @@ Scoring Process:
 
 
 Usage in Scenario Generation:
-- Use the score to fine-tune the complexity of the generated scenario
-- Higher scores within each difficulty level should correspond to:
-  * More sophisticated implementation of the suspicious pattern
-  * Increased overall transaction volume and complexity
-  * More nuanced context and potential explanations
-  * More challenging analyst decision factors
+   - Use the score to fine-tune the complexity of the generated scenario
+   - Higher scores within each difficulty level should correspond to:
+      * More sophisticated implementation of the suspicious pattern
+      * Increased overall transaction volume and complexity
+      * More nuanced context and potential explanations
+      * More challenging analyst decision factors
 
 
 ## 11. Auxiliary Data
 
 Include 6-month averages for the following categories (if showAuxiliaryData is true):
-- Daily expenses (groceries, dining out)
-- Housing (rent/mortgage, utilities)
-- Transportation
-- Healthcare
-- Entertainment
-- Savings/Investments
-- International transfers
-- Cash withdrawals/deposits
+   - Daily expenses (groceries, dining out)
+   - Housing (rent/mortgage, utilities)
+   - Transportation
+   - Healthcare
+   - Entertainment
+   - Savings/Investments
+   - International transfers
+   - Cash withdrawals/deposits
 
 Calculation Methods:
-a. Daily Expenses: Sum all transactions labeled as groceries or dining out over 6 months, divide by 180
-b. Housing: Sum all housing-related expenses over 6 months, divide by 6
-c. Transportation: Sum all transportation-related expenses over 6 months, divide by 6
-d. Healthcare: Sum all healthcare-related expenses over 6 months, divide by 6
-e. Entertainment: Sum all entertainment-related expenses over 6 months, divide by 6
-f. Savings/Investments: Calculate net increase in savings and investment accounts over 6 months, divide by 6
-g. International Transfers: Sum absolute value of all international transfers over 6 months, divide by 6
-h. Cash Withdrawals/Deposits: Sum absolute value of all cash withdrawals and deposits over 6 months, divide by 6
+   a. Daily Expenses: Sum all transactions labeled as groceries or dining out over 6 months, divide by 180
+   b. Housing: Sum all housing-related expenses over 6 months, divide by 6
+   c. Transportation: Sum all transportation-related expenses over 6 months, divide by 6
+   d. Healthcare: Sum all healthcare-related expenses over 6 months, divide by 6
+   e. Entertainment: Sum all entertainment-related expenses over 6 months, divide by 6
+   f. Savings/Investments: Calculate net increase in savings and investment accounts over 6 months, divide by 6
+   g. International Transfers: Sum absolute value of all international transfers over 6 months, divide by 6
+   h. Cash Withdrawals/Deposits: Sum absolute value of all cash withdrawals and deposits over 6 months, divide by 6
 
 
 General Formula: Monthly Average = (Sum of all relevant transactions over 6 months) / 6
@@ -590,7 +610,7 @@ General Formula: Monthly Average = (Sum of all relevant transactions over 6 mont
 - Ensure averages are consistent with the persona's financial profile and transaction patterns
 - For business accounts, adjust calculations to reflect business-specific patterns
 - For categories with irregular expenses, consider using a weighted average
-
+- When generating auxiliary data, ensure consistency with the [Financial Profile](#5-financial-profile) and [Transaction Data](#6-transaction-data). Follow the [Data Sanitization Guidelines](#15-data-sanitization-guidelines) when including this information in the output.
 
 ## 12. Quality Assurance
 
@@ -605,7 +625,7 @@ General Formula: Monthly Average = (Sum of all relevant transactions over 6 mont
 - Verify that freelance and self-employed individuals are correctly classified as business accounts
 - Check that transaction patterns for freelance/self-employed accounts reflect the irregular nature of project-based income and expenses
 - Ensure the financial profile and transaction data are consistent with the specific type of business account
-
+- Implement quality checks as outlined in the [Testing Guidelines](#18-testing-guidelines). Ensure all generated data complies with [Regulatory Compliance](#19-regulatory-compliance) and reflects the [Dutch Context Emphasis](#17-dutch-context-emphasis).
 
 ## 13. Output Format
 
@@ -680,6 +700,8 @@ Field Descriptions:
 8. auxiliaryData: 6-month category averages (only if showAuxiliaryData is true)
 </note>
 
+When generating the output, follow the [Data Sanitization Guidelines](#15-data-sanitization-guidelines) to protect sensitive information. For error cases, refer to the [Error Handling](#14-error-handling) section.
+
 ## 14. Error Handling
 
 If any input parameter is invalid, return a JSON object with the following structure:
@@ -739,11 +761,13 @@ Example of an error response:
 }
 ```
 
+For examples of how errors are reported in the output, see the [Output Format](#13-output-format) section. Ensure error messages are clear and helpful, guiding users to the relevant sections of this document for more information.
+
 <important>
 Ensure that the function checks all parameters and reports all errors, not just the first one encountered. This allows users to correct all issues at once.
 </important>
 
-## 14. Data Sanitization Guidelines
+## 15. Data Sanitization Guidelines
 
 To protect privacy and prevent the exposure of sensitive information, follow these guidelines when generating scenario data:
 
@@ -775,11 +799,11 @@ To protect privacy and prevent the exposure of sensitive information, follow the
    - Generate fictitious numbers that follow the correct format but would fail validation checks
 
 
-Consistency: Ensure that once a sanitized name or identifier is used for an entity, it is used consistently throughout the scenario.
-When using placeholder data, make sure it's clearly distinguishable as fictional to prevent any confusion with real entities.
+- Consistency: Ensure that once a sanitized name or identifier is used for an entity, it is used consistently throughout the scenario.
+- Apply these guidelines when generating [Persona Generation](#4-persona-generation), [Financial Profile](#5-financial-profile), and [Transaction Data](#6-transaction-data). Ensure sanitized data still complies with [Regulatory Compliance](#19-regulatory-compliance) requirements.
 
 
-## 15. Performance Considerations
+## 16. Performance Considerations
 
 When implementing the KYC/TM Test Scenario Generator, consider the following performance aspects:
 
@@ -822,7 +846,7 @@ When implementing the KYC/TM Test Scenario Generator, consider the following per
 
 Performance Monitoring: Implement logging and monitoring to track generation times and resource usage. This will help identify bottlenecks and opportunities for optimization.
 
-## 16. Dutch Context Emphasis
+## 17. Dutch Context Emphasis
 
 This KYC/TM Test Scenario Generator is specifically designed for the Dutch financial context. All generated scenarios, transaction patterns, and financial behaviors are tailored to reflect the norms and regulations of the Netherlands.
 
@@ -849,10 +873,10 @@ Key Dutch-specific elements included in this generator:
 10. Dutch Date Formats: Dates are presented in the DD-MM-YYYY format, as is common in the Netherlands.
 
 <important>
-Ensure all numerical data is formatted consistently (e.g., use of decimal points, thousands separators)
+Ensure this Dutch context is reflected in all aspects of the scenario, including [Persona Generation](#4-persona-generation), [Financial Profile](#5-financial-profile), [Transaction Data](#6-transaction-data), and [Suspicious Activity](#7-suspicious-activity).
 </important>
 
-## 17. Testing Guidelines
+## 18. Testing Guidelines
 
 To ensure the quality and reliability of the generated KYC/TM test scenarios, implement the following testing strategies:
 
@@ -932,7 +956,7 @@ def test_retail_scenario_generation():
     # Add more assertions as needed
 ```
 
-## 18. Regulatory Compliance
+## 19. Regulatory Compliance
 
 Ensure that all generated scenarios comply with current Dutch and EU KYC/AML regulations. Key regulations to consider include:
 
@@ -986,7 +1010,9 @@ Specific Regulatory Considerations:
 
 Regularly update the scenario generator to reflect the latest changes in KYC/AML regulations. Stay informed about updates from De Nederlandsche Bank, the Dutch Financial Intelligence Unit (FIU-Netherlands), and EU regulatory bodies.
 
-## 19. Glossary
+Apply these regulatory considerations across all aspects of scenario generation, particularly in [Suspicious Activity](#7-suspicious-activity), [Transaction Data](#6-transaction-data), and [Analyst Decision](#9-analyst-decision). Ensure compliance is maintained even with varying [Difficulty Level and Scoring](#10-difficulty-level-and-scoring).
+
+## 20. Glossary
 
 - AML: Anti-Money Laundering - Refers to the laws, regulations, and procedures intended to prevent criminals from disguising illegally obtained funds as legitimate income.
 - BSN: Burgerservicenummer - The Dutch citizen service number, a unique personal identification number.
@@ -1003,6 +1029,8 @@ Regularly update the scenario generator to reflect the latest changes in KYC/AML
 - Wwft: Wet ter voorkoming van witwassen en financieren van terrorisme - The Dutch Money Laundering and Terrorist Financing (Prevention) Act.
 
 This glossary covers key terms used in the prompt. For more comprehensive definitions or explanations of financial and regulatory concepts, refer to official sources such as De Nederlandsche Bank or the European Banking Authority.
+
+Refer to this glossary for definitions of terms used throughout the document. For more context on how these terms are applied, see the relevant sections such as [Regulatory Compliance](#19-regulatory-compliance), [Suspicious Activity](#7-suspicious-activity), and [Dutch Context Emphasis](#17-dutch-context-emphasis).
 
 
 GenerateKYCTestScenario(
