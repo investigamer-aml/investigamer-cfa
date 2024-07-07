@@ -221,6 +221,94 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
       - Adjust ranges as needed to fit specific scenarios and suspicious activity patterns
       - For business accounts, adapt guidelines based on whether it's traditional or freelance/self-employed
 
+   3.3 Incorporating Dutch Cultural Elements:
+
+      To ensure scenarios reflect authentic Dutch cultural and financial practices, incorporate the following elements:
+
+      1. Dutch Holidays and Events:
+         - NEW_YEARS_DAY = "January 1"
+         - KINGS_DAY = "April 27"
+         - LIBERATION_DAY = "May 5"
+         - SINTERKLAAS = "December 5"
+         - CHRISTMAS = ["December 25", "December 26"]
+
+         Incorporate increased spending patterns around these dates.
+
+      2. Common Dutch Banks:
+         - ING_BANK = "ING"
+         - RABOBANK = "Rabobank"
+         - ABN_AMRO = "ABN AMRO"
+         - SNS_BANK = "SNS Bank"
+         - REVOLUT = "Revolut Bank"
+         - BUNQ = "Bunq"
+         - TRIODOS_BANK = "Triodos Bank"
+
+         Use these names in transaction descriptions for transfers between banks.
+
+      3. Popular Dutch Retailers:
+         - ALBERT_HEIJN = "Albert Heijn"
+         - JUMBO = "Jumbo"
+         - HEMA = "HEMA"
+         - BOL_COM = "bol.com"
+         - COOLBLUE = "Coolblue"
+         - MEDIA_MARKT = "Media Markt"
+         - ACTION = "Action"
+         - LIDL = "Lidl"
+         - DIRK = "Dirk"
+         - BLOKKER = "Blokker"
+         - KRUIDVAT = "Kruidvat"
+         - SPAR = "Spar"
+
+         Include these in transaction descriptions for everyday purchases.
+
+      4. Dutch Payment Methods:
+         - IDEAL = "iDEAL"
+         - PIN_TRANSACTION = "PIN transaction"
+         - TIKKIE = "Tikkie"
+
+         Reference these in transaction descriptions for online and in-person payments.
+
+      5. Dutch Financial Practices:
+         - DUTCH_VAT = 0.21  // 21% VAT rate
+         - MORTGAGE_INTEREST_DEDUCTION = True  // Common tax benefit
+         - HEALTH_INSURANCE_MANDATORY = True
+         - PENSION_CONTRIBUTION = 0.15  // Typical pension contribution around 15% of salary
+
+         Incorporate these elements in financial profiles and transaction patterns.
+
+      6. Geographic Elements:
+         - RANDSTAD = ["Amsterdam", "Rotterdam", "The Hague", "Utrecht"]
+         - BORDER_COUNTRIES = ["Germany", "Belgium"]
+
+         Use these for location-based transactions and international transfers.
+
+      7. Dutch Education System:
+         - DUTCH_UNIVERSITIES = ["University of Amsterdam", "Utrecht University", "Leiden University", "Delft University of Technology", "Erasmus University Rotterdam", "Vrije Universiteit Amsterdam", "Tilburg University", "Radboud University", "Maastricht University"]
+         - STUDENT_FINANCE = "DUO"
+
+         Include for scenarios involving students or education-related transactions.
+
+      8. Transportation:
+         - OV_CHIPKAART = "OV-chipkaart"
+         - NS_RAILWAYS = "NS"
+         - GVB = "GVB"
+
+         Use in transaction descriptions for public transportation expenses.
+
+      9. Housing:
+         - RENTAL_PLATFORMS = ["Funda", "Pararius", "Huurwoningen", "Kamernet"]
+         - HOUSING_CORPORATIONS = ["Vestia", "Ymere", "Eigen Haard", "Woonstad Rotterdam", "De Key"]
+
+         Reference these in housing-related transactions.
+
+      10. Utility Providers:
+         - ENERGY_PROVIDERS = ["Vattenfall", "Eneco", "Essent", "Greenchoice", "Budget Energie"]
+         - WATER_COMPANIES = ["Vitens", "Evides", "PWN", "Waternet", "Brabant Water"]
+
+         Use these names for utility bill payments.
+
+      When generating scenarios, weave these elements into transaction descriptions, persona backgrounds, and contextual details to create authentic Dutch financial scenarios.
+
 4. Suspicious Activity:
 
    - Types: Use the specific suspiciousPattern provided in the input parameter. Possible values are:
