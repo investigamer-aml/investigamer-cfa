@@ -13,6 +13,18 @@ Input Parameters:
 4. accountType: string ("retail", "business")
 5. suspiciousPattern: string ("fast-in-fast-out", "large-atm-withdrawals", "high-volume-suspicious-countries")
 
+Input Parameter Validation:
+  - Validate each input parameter against its allowed values:
+    - showAuxiliaryData (boolean): true, false
+    - decisionOutcome (string): "escalate", "close"
+    - difficultyLevel (string): "easy", "medium", "hard"
+    - accountType (string): "retail", "business"
+    - suspiciousPattern (string): "fast-in-fast-out", "large-atm-withdrawals", "high-volume-suspicious-countries"
+
+  - If any parameter is invalid:
+    - Immediately halt the scenario generation process
+    - Return an error message listing all invalid parameters and their allowed values
+
 **Clarify Business Account Types**
 When the accountType parameter is set to "business", randomly select one of the following subtypes:
    1. Traditional Business (80% probability)
@@ -306,20 +318,58 @@ Note: When the accountType parameter is set to "business", the scenario generato
 
 **Output Format:**
 
-- Persona details (including background story and previous flagging status)
-- Financial profile
-- 6-month transaction data (always included), each transaction containing:
-  * Date
-  * Description
-  * Amount
-  * Country
-  * Merchant
-  * Type (incoming/outgoing)
-- Suspicious activity details (including specified suspiciousPattern if any)
-- Context and explanation
-- Analyst decision criteria (non-repetitive and appropriately complex)
-- Difficulty level and score
-- Auxiliary data (6-month category averages, if showAuxiliaryData is true)
+More information about the output format. Belowe you will find the
+1. Persona details (including background story and previous flagging status)
+  - name: Full name of the generated persona (string)
+  - age: Age of the persona (number)
+  - occupation: Job title or profession of the persona (string)
+  - familyStatus: Marital/family status (string: "Single", "Married", "Divorced", or "Widowed")
+  - background: Brief background story of the persona (string)
+  - previouslyFlagged: Whether the persona has been flagged in the past (boolean)
+
+2. Financial profile
+  - monthlyIncome: Average monthly income in euros (number)
+  - savingsBalance: Current savings account balance in euros (number)
+  - investmentPortfolio:
+    - hasInvestments: Whether the persona has investments (boolean)
+    - investmentAmount: Total value of investments in euros (number, null if hasInvestments is false)
+
+3. transactionData: 6-month transaction data (array of objects)
+  - Each transaction contains:
+    - date: Date of the transaction (string in "YYYY-MM-DD" format)
+    - description: Brief description of the transaction (string)
+    - amount: Transaction amount in euros (number, positive for incoming, negative for outgoing)
+    - country: Country where the transaction occurred (string)
+    - merchant: Name of the merchant or counterparty (string)
+    - type: Whether the transaction is incoming or outgoing (string: "incoming" or "outgoing")
+
+4. suspiciousActivity: Suspicious activity details
+  - types: Array of suspicious activity types present in the scenario (array of strings)
+  - timing: Array of time periods when suspicious activities occurred (array of strings)
+  - amounts: Array of amounts involved in suspicious activities (array of numbers)
+  - pattern: The specific suspicious pattern used in this scenario (string)
+  - frequencies: Array of frequencies for each type of suspicious activity (array of numbers)
+
+5. Detailed explanation of the scenario, including the suspicious activities and their context (string)
+
+6. analystDecision: Analyst decision criteria
+   - action: The correct decision for this scenario (string: "escalate" or "close")
+   - keyFactors: Array of critical points to consider in making the decision (array of strings, non-repetitive and appropriately complex)
+
+7. difficultyLevel: Difficulty level and score
+   - level: The overall difficulty level of the scenario (string: "easy", "medium", or "hard")
+   - score: Numeric score representing the specific difficulty within the level (number: 1-10)
+
+
+8. auxiliaryData: Auxiliary data (only included if showAuxiliaryData is true) 6-month category averages:
+   - dailyExpenses: Monthly average of daily expenses in euros (number)
+   - housing: Monthly average of housing-related expenses in euros (number)
+   - transportation: Monthly average of transportation expenses in euros (number)
+   - healthcare: Monthly average of healthcare expenses in euros (number)
+   - entertainment: Monthly average of entertainment expenses in euros (number)
+   - savingsInvestments: Monthly average of savings and investments in euros (number)
+   - internationalTransfers: Monthly average of international transfers in euros (number)
+   - cashWithdrawalsDeposits: Monthly average of cash withdrawals and deposits in euros (number)
 
 Generate a JSON object containing the following structure. All fields must be present, even if some are null or empty arrays:
 
@@ -376,6 +426,19 @@ Generate a JSON object containing the following structure. All fields must be pr
     "internationalTransfers": "number (monthly average)",
     "cashWithdrawalsDeposits": "number (monthly average)"
   }
+}
+
+Error Output Format JSON:
+
+{
+  "error": "Invalid input parameters",
+  "invalidParameters": [
+    {
+      "parameter": "string (name of the invalid parameter)",
+      "providedValue": "string or boolean (the invalid value provided)",
+      "allowedValues": ["array of allowed values for this parameter"]
+    }
+  ]
 }
 
 Ensure all numerical data is formatted consistently (e.g., use of decimal points, thousands separators)
