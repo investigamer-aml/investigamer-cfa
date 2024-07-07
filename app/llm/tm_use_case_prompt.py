@@ -802,9 +802,33 @@ When implementing the KYC/TM Test Scenario Generator, consider the following per
    - Use efficient data structures (e.g., hash maps for quick lookups of predefined data).
    - Implement lazy evaluation where possible, especially for auxiliary data calculations.
 
-
 Performance Monitoring: Implement logging and monitoring to track generation times and resource usage. This will help identify bottlenecks and opportunities for optimization.
 
+## 16. Dutch Context Emphasis
+
+This KYC/TM Test Scenario Generator is specifically designed for the Dutch financial context. All generated scenarios, transaction patterns, and financial behaviors are tailored to reflect the norms and regulations of the Netherlands.
+
+Key Dutch-specific elements included in this generator:
+
+1. Dutch Names: All generated personas use common Dutch first names and surnames.
+
+2. Dutch Financial Institutions: Scenarios include real Dutch banks and financial service providers.
+
+3. Dutch Companies and Retailers: Transaction data references actual Dutch businesses and retail chains.
+
+4. Dutch Currency: All monetary values are in Euros (€).
+
+5. Dutch Financial Products: Scenarios reflect financial products and services commonly available in the Netherlands.
+
+6. Dutch Regulations: Suspicious activity patterns and AML scenarios are based on Dutch and EU financial regulations.
+
+7. Dutch Cultural Elements: Scenarios incorporate Dutch holidays, events, and cultural practices that may influence financial behavior.
+
+8. Dutch Address Formats: All generated addresses follow Dutch conventions.
+
+9. Dutch Identification: References to identification numbers use the Dutch BSN (Burgerservicenummer) format.
+
+10. Dutch Date Formats: Dates are presented in the DD-MM-YYYY format, as is common in the Netherlands.
 
 <important>
 Ensure all numerical data is formatted consistently (e.g., use of decimal points, thousands separators)
