@@ -5,7 +5,24 @@ This is a prompt for the LLM to generate use cases for the Investigamer CFA.
 
 prompt = """
 # KYC/TM Test Scenario Generator Prompt
-Version: 1.0.0
+
+Version: 1.1.0
+
+## Changelog
+
+### Version 1.1.0 (Current)
+- Added Usage Examples section with sample inputs and outputs
+- Expanded Error Handling with specific error messages for each parameter
+- Added Data Sanitization Guidelines
+- Included Performance Considerations section
+- Added Testing Guidelines with sample unit test
+- Expanded Regulatory Compliance section with specific Dutch and EU regulations
+- Added this Changelog
+
+### Version 1.0.0
+- Initial release of the KYC/TM Test Scenario Generator Prompt
+- Included basic functionality for generating Dutch financial scenarios
+- Implemented difficulty levels and suspicious activity patterns
 
 ## Table of Contents
 1. [Function Definition and Input Parameters](#1-function-definition-and-input-parameters)
