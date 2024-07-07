@@ -102,7 +102,50 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
         - Use a combination of individual client names and company names for incoming payments
         - Include business-related expenses (e.g., equipment, software subscriptions, home office)
 
-4. Suspicious Activity:
+4. Guidelines for Transaction Frequency and Volume
+   - Transaction Frequency and Volume Guidelines:
+      a. Retail Accounts:
+        - Daily transactions: 0-3 per day
+        - Weekly large transactions (e.g., rent, major purchases): 1-2 per week
+        - Monthly recurring transactions (e.g., subscriptions, utilities): 2-5 per month
+        - Quarterly transactions (e.g., insurance payments): 1-2 per quarter
+        - Total transactions per month: 40-80
+
+      b. Business Accounts (Traditional):
+        - Daily transactions: 3-8 per day
+        - Weekly large transactions (e.g., payroll, inventory purchases): 1-3 per week
+        - Monthly recurring transactions (e.g., rent, utilities, subscriptions): 5-10 per month
+        - Quarterly transactions (e.g., tax payments, large contract payments): 2-3 per quarter
+        - Total transactions per month: 80-160
+
+      c. Business Accounts (Freelance/Self-employed):
+        - Daily transactions: 1-4 per day
+        - Weekly large transactions (e.g., client payments, major purchases): 1-2 per week
+        - Monthly recurring transactions (e.g., subscriptions, utilities): 4-8 per month
+        - Quarterly transactions (e.g., tax payments): 1-2 per quarter
+        - Total transactions per month: 50-125
+
+   - Transaction Volume Adjustments:
+     - Adjust the number of transactions based on the account's financial profile (e.g., higher income/revenue = more transactions)
+     - For higher difficulty levels, increase the number of transactions by 10-20%
+     - Ensure that the transaction volume aligns with the suspicious activity patterns when applicable
+
+   - Seasonal Variations:
+     - Incorporate seasonal variations in transaction frequency and volume:
+       - Retail: Increase transactions during holiday seasons (e.g., December)
+       - Business: Adjust for industry-specific busy seasons or fiscal year-end activities
+
+   - Weekend vs. Weekday Patterns:
+     - Retail: More transactions on weekends, fewer on weekdays
+     - Business (Traditional): More transactions on weekdays, fewer on weekends
+     - Freelance/Self-employed: More evenly distributed, with slight increase on weekdays
+
+   - Generating Transaction Dates:
+     - Distribute transactions across the 6-month period using a weighted random approach
+     - Ensure recurring transactions (e.g., rent, subscriptions) occur on consistent dates each month
+     - Avoid generating transactions on inappropriate days (e.g., no business transactions on public holidays)
+
+5. Suspicious Activity:
 
    - Types: Use the specific suspiciousPattern provided in the input parameter. Possible values are:
      - "fast-in-fast-out": Large deposits followed by rapid withdrawals or transfers
@@ -141,7 +184,7 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - Consider the persona's background story when crafting suspicious activities
    - For higher difficulty levels, combine multiple suspicious elements or create more subtle patterns
 
-5. Context and Explanation:
+6. Context and Explanation:
    - Provide a coherent explanation for the suspicious activity
    - Include relevant Dutch cultural, economic, or regulatory factors
    - Align the explanation with the given decisionOutcome
@@ -150,18 +193,18 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - For higher difficulties, introduce more complexity and potential mitigating factors in the explanation
    - Incorporate the persona's background story into the explanation
 
-6. Analyst Decision:
+7. Analyst Decision:
    - Correct action: Use the provided decisionOutcome
    - Key factors to consider: [List 1-5 non-repetitive, critical points, including aspects of the suspiciousPattern if specified]
    - For easy difficulty, make the decision factors more straightforward
    - For hard difficulty, ensure the factors reflect the intricacy of the situation and include potential mitigating circumstances
 
-7. Difficulty Level:
+8. Difficulty Level:
    - Use the provided difficultyLevel
    - Assign a score: Easy (1-3), Medium (4-7), Hard (8-10)
    - For hard difficulty, ensure patterns are complex and not immediately obvious
 
-8. Difficulty Level Scoring:
+9. Difficulty Level Scoring:
    - Easy (1-3):
      - Score 1: Very obvious suspicious pattern, minimal transaction complexity
      - Score 2: Clear suspicious pattern, slight increase in transaction volume
@@ -193,7 +236,7 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
        - More nuanced context and potential explanations
        - More challenging analyst decision factors
 
-9. Auxiliary Data (if showAuxiliaryData is true):
+10. Auxiliary Data (if showAuxiliaryData is true):
    Include 6-month averages for the following categories:
    - Daily expenses (groceries, dining out)
    - Housing (rent/mortgage, utilities)
@@ -204,7 +247,7 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - International transfers
    - Cash withdrawals/deposits
 
-10. Calculating 6-Month Averages for Auxiliary Data
+11. Calculating 6-Month Averages for Auxiliary Data
     - Calculating Auxiliary Data Averages:
       - For each category, use the following methods to calculate the 6-month averages:
         a. Daily Expenses (groceries, dining out):
@@ -246,7 +289,7 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
      - For business accounts, adjust the calculations to reflect business-specific patterns (e.g., higher transaction volumes, regular large payments)
      - For categories with irregular expenses (like healthcare or international transfers), consider using a weighted average that accounts for months with unusually high or low activity
 
-11. Quality Assurance:
+12. Quality Assurance:
    - Ensure all data is realistic and consistent for the Dutch context
    - Verify that suspicious activities align with the given decisionOutcome and suspiciousPattern
    - Confirm that the scenario difficulty matches the provided difficultyLevel
@@ -260,7 +303,8 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
 
 Note: When the accountType parameter is set to "business", the scenario generator should randomly decide whether it's a traditional business or a freelance/self-employed individual, and adjust the financial profile and transaction patterns accordingly.
 
-Output Format:
+
+**Output Format:**
 
 - Persona details (including background story and previous flagging status)
 - Financial profile
