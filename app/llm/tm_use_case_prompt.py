@@ -114,50 +114,52 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
         - Use a combination of individual client names and company names for incoming payments
         - Include business-related expenses (e.g., equipment, software subscriptions, home office)
 
-4. Guidelines for Transaction Frequency and Volume
-   - Transaction Frequency and Volume Guidelines:
-      a. Retail Accounts:
-        - Daily transactions: 0-3 per day
-        - Weekly large transactions (e.g., rent, major purchases): 1-2 per week
-        - Monthly recurring transactions (e.g., subscriptions, utilities): 2-5 per month
-        - Quarterly transactions (e.g., insurance payments): 1-2 per quarter
-        - Total transactions per month: 40-80
+   3.1. Guidelines for Transaction Frequency and Volume
+      - Transaction Frequency and Volume Guidelines:
+         a. Retail Accounts:
+         - Daily transactions: 0-3 per day
+         - Weekly large transactions (e.g., rent, major purchases): 1-2 per week
+         - Monthly recurring transactions (e.g., subscriptions, utilities): 2-5 per month
+         - Quarterly transactions (e.g., insurance payments): 1-2 per quarter
+         - Total transactions per month: 40-80
 
-      b. Business Accounts (Traditional):
-        - Daily transactions: 3-8 per day
-        - Weekly large transactions (e.g., payroll, inventory purchases): 1-3 per week
-        - Monthly recurring transactions (e.g., rent, utilities, subscriptions): 5-10 per month
-        - Quarterly transactions (e.g., tax payments, large contract payments): 2-3 per quarter
-        - Total transactions per month: 80-160
+         b. Business Accounts (Traditional):
+         - Daily transactions: 3-8 per day
+         - Weekly large transactions (e.g., payroll, inventory purchases): 1-3 per week
+         - Monthly recurring transactions (e.g., rent, utilities, subscriptions): 5-10 per month
+         - Quarterly transactions (e.g., tax payments, large contract payments): 2-3 per quarter
+         - Total transactions per month: 80-160
 
-      c. Business Accounts (Freelance/Self-employed):
-        - Daily transactions: 1-4 per day
-        - Weekly large transactions (e.g., client payments, major purchases): 1-2 per week
-        - Monthly recurring transactions (e.g., subscriptions, utilities): 4-8 per month
-        - Quarterly transactions (e.g., tax payments): 1-2 per quarter
-        - Total transactions per month: 50-125
+         c. Business Accounts (Freelance/Self-employed):
+         - Daily transactions: 1-4 per day
+         - Weekly large transactions (e.g., client payments, major purchases): 1-2 per week
+         - Monthly recurring transactions (e.g., subscriptions, utilities): 4-8 per month
+         - Quarterly transactions (e.g., tax payments): 1-2 per quarter
+         - Total transactions per month: 50-125
 
-   - Transaction Volume Adjustments:
-     - Adjust the number of transactions based on the account's financial profile (e.g., higher income/revenue = more transactions)
-     - For higher difficulty levels, increase the number of transactions by 10-20%
-     - Ensure that the transaction volume aligns with the suspicious activity patterns when applicable
+      - Transaction Volume Adjustments:
+      - Adjust the number of transactions based on the account's financial profile (e.g., higher income/revenue = more transactions)
+      - For higher difficulty levels, increase the number of transactions by 10-20%
+      - Ensure that the transaction volume aligns with the suspicious activity patterns when applicable
 
-   - Seasonal Variations:
-     - Incorporate seasonal variations in transaction frequency and volume:
-       - Retail: Increase transactions during holiday seasons (e.g., December)
-       - Business: Adjust for industry-specific busy seasons or fiscal year-end activities
+      - Seasonal Variations:
+      - Incorporate seasonal variations in transaction frequency and volume:
+         - Retail: Increase transactions during holiday seasons (e.g., December)
+         - Business: Adjust for industry-specific busy seasons or fiscal year-end activities
 
-   - Weekend vs. Weekday Patterns:
-     - Retail: More transactions on weekends, fewer on weekdays
-     - Business (Traditional): More transactions on weekdays, fewer on weekends
-     - Freelance/Self-employed: More evenly distributed, with slight increase on weekdays
+      - Weekend vs. Weekday Patterns:
+      - Retail: More transactions on weekends, fewer on weekdays
+      - Business (Traditional): More transactions on weekdays, fewer on weekends
+      - Freelance/Self-employed: More evenly distributed, with slight increase on weekdays
 
-   - Generating Transaction Dates:
-     - Distribute transactions across the 6-month period using a weighted random approach
-     - Ensure recurring transactions (e.g., rent, subscriptions) occur on consistent dates each month
-     - Avoid generating transactions on inappropriate days (e.g., no business transactions on public holidays)
+      - Generating Transaction Dates:
+      - Distribute transactions across the 6-month period using a weighted random approach
+      - Ensure recurring transactions (e.g., rent, subscriptions) occur on consistent dates each month
+      - Avoid generating transactions on inappropriate days (e.g., no business transactions on public holidays)
 
-5. Suspicious Activity:
+   3.2 Stats
+
+4. Suspicious Activity:
 
    - Types: Use the specific suspiciousPattern provided in the input parameter. Possible values are:
      - "fast-in-fast-out": Large deposits followed by rapid withdrawals or transfers
@@ -196,7 +198,7 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - Consider the persona's background story when crafting suspicious activities
    - For higher difficulty levels, combine multiple suspicious elements or create more subtle patterns
 
-6. Context and Explanation:
+5. Context and Explanation:
    - Provide a coherent explanation for the suspicious activity
    - Include relevant Dutch cultural, economic, or regulatory factors
    - Align the explanation with the given decisionOutcome
@@ -205,50 +207,50 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - For higher difficulties, introduce more complexity and potential mitigating factors in the explanation
    - Incorporate the persona's background story into the explanation
 
-7. Analyst Decision:
+6. Analyst Decision:
    - Correct action: Use the provided decisionOutcome
    - Key factors to consider: [List 1-5 non-repetitive, critical points, including aspects of the suspiciousPattern if specified]
    - For easy difficulty, make the decision factors more straightforward
    - For hard difficulty, ensure the factors reflect the intricacy of the situation and include potential mitigating circumstances
 
-8. Difficulty Level:
+7. Difficulty Level:
    - Use the provided difficultyLevel
    - Assign a score: Easy (1-3), Medium (4-7), Hard (8-10)
    - For hard difficulty, ensure patterns are complex and not immediately obvious
 
-9. Difficulty Level Scoring:
-   - Easy (1-3):
-     - Score 1: Very obvious suspicious pattern, minimal transaction complexity
-     - Score 2: Clear suspicious pattern, slight increase in transaction volume
-     - Score 3: Noticeable suspicious pattern, introduction of minor complexities
-   - Medium (4-7):
-     - Score 4: Suspicious pattern requires some analysis, increased transaction volume
-     - Score 5: Pattern is less obvious, requires correlation between multiple transactions
-     - Score 6: Introduction of potential mitigating factors, higher complexity in transaction patterns
-     - Score 7: Multiple subtle instances of suspicious pattern, requires thorough investigation
-   - Hard (8-10):
-     - Score 8: Complex implementation of suspicious pattern, high volume of transactions
-     - Score 9: Very subtle pattern implementation, potential legitimate explanations present
-     - Score 10: Extremely complex scenario, multiple intertwined patterns, highest level of analysis required
+   7.1. Difficulty Level Scoring:
+      - Easy (1-3):
+      - Score 1: Very obvious suspicious pattern, minimal transaction complexity
+      - Score 2: Clear suspicious pattern, slight increase in transaction volume
+      - Score 3: Noticeable suspicious pattern, introduction of minor complexities
+      - Medium (4-7):
+      - Score 4: Suspicious pattern requires some analysis, increased transaction volume
+      - Score 5: Pattern is less obvious, requires correlation between multiple transactions
+      - Score 6: Introduction of potential mitigating factors, higher complexity in transaction patterns
+      - Score 7: Multiple subtle instances of suspicious pattern, requires thorough investigation
+      - Hard (8-10):
+      - Score 8: Complex implementation of suspicious pattern, high volume of transactions
+      - Score 9: Very subtle pattern implementation, potential legitimate explanations present
+      - Score 10: Extremely complex scenario, multiple intertwined patterns, highest level of analysis required
 
-   - Scoring Guidelines:
-     1. Base Score: Start with the middle score of the difficulty level (Easy: 2, Medium: 5, Hard: 9)
-     2. Adjust based on:
-       - Number of suspicious transactions (+1 for more, -1 for fewer)
-       - Complexity of the pattern implementation (+1 for more complex, -1 for simpler)
-       - Presence of mitigating factors or potential legitimate explanations (+1 if present)
-       - Volume and complexity of overall transactions (+1 for higher, -1 for lower)
-     3. Ensure the final score remains within the range for the chosen difficulty level
+      - Scoring Guidelines:
+         1. Base Score: Start with the middle score of the difficulty level (Easy: 2, Medium: 5, Hard: 9)
+         2. Adjust based on:
+            - Number of suspicious transactions (+1 for more, -1 for fewer)
+            - Complexity of the pattern implementation (+1 for more complex, -1 for simpler)
+            - Presence of mitigating factors or potential legitimate explanations (+1 if present)
+            - Volume and complexity of overall transactions (+1 for higher, -1 for lower)
+         3. Ensure the final score remains within the range for the chosen difficulty level
 
-   - Usage in Scenario Generation:
-     - Use the score to fine-tune the complexity of the generated scenario
-     - Higher scores within each difficulty level should correspond to:
-       - More sophisticated implementation of the suspicious pattern
-       - Increased overall transaction volume and complexity
-       - More nuanced context and potential explanations
-       - More challenging analyst decision factors
+      - Usage in Scenario Generation:
+      - Use the score to fine-tune the complexity of the generated scenario
+      - Higher scores within each difficulty level should correspond to:
+         - More sophisticated implementation of the suspicious pattern
+         - Increased overall transaction volume and complexity
+         - More nuanced context and potential explanations
+         - More challenging analyst decision factors
 
-10. Auxiliary Data (if showAuxiliaryData is true):
+8. Auxiliary Data (if showAuxiliaryData is true):
    Include 6-month averages for the following categories:
    - Daily expenses (groceries, dining out)
    - Housing (rent/mortgage, utilities)
@@ -259,49 +261,49 @@ Generate a KYC/TM test scenario for the Dutch financial context based on the fol
    - International transfers
    - Cash withdrawals/deposits
 
-11. Calculating 6-Month Averages for Auxiliary Data
-    - Calculating Auxiliary Data Averages:
-      - For each category, use the following methods to calculate the 6-month averages:
-        a. Daily Expenses (groceries, dining out):
-           - Sum all transactions labeled as groceries or dining out over 6 months
-           - Divide the sum by 180 (average days in 6 months)
+   8.1. Calculating 6-Month Averages for Auxiliary Data
+      - Calculating Auxiliary Data Averages:
+         - For each category, use the following methods to calculate the 6-month averages:
+         a. Daily Expenses (groceries, dining out):
+            - Sum all transactions labeled as groceries or dining out over 6 months
+            - Divide the sum by 180 (average days in 6 months)
 
-        b. Housing (rent/mortgage, utilities):
-           - Sum all housing-related expenses over 6 months
-           - Divide by 6 to get the monthly average
+         b. Housing (rent/mortgage, utilities):
+            - Sum all housing-related expenses over 6 months
+            - Divide by 6 to get the monthly average
 
-        c. Transportation:
-           - Sum all transportation-related expenses (fuel, public transport, car payments) over 6 months
-           - Divide by 6 to get the monthly average
+         c. Transportation:
+            - Sum all transportation-related expenses (fuel, public transport, car payments) over 6 months
+            - Divide by 6 to get the monthly average
 
-        d. Healthcare:
-           - Sum all healthcare-related expenses over 6 months
-           - Divide by 6 to get the monthly average
+         d. Healthcare:
+            - Sum all healthcare-related expenses over 6 months
+            - Divide by 6 to get the monthly average
 
-        e. Entertainment:
-           - Sum all entertainment-related expenses over 6 months
-           - Divide by 6 to get the monthly average
+         e. Entertainment:
+            - Sum all entertainment-related expenses over 6 months
+            - Divide by 6 to get the monthly average
 
-        f. Savings/Investments:
-           - Calculate the net increase in savings and investment accounts over 6 months
-           - Divide by 6 to get the monthly average
+         f. Savings/Investments:
+            - Calculate the net increase in savings and investment accounts over 6 months
+            - Divide by 6 to get the monthly average
 
-        g. International Transfers:
-           - Sum the absolute value of all international transfers (both incoming and outgoing) over 6 months
-           - Divide by 6 to get the monthly average
+         g. International Transfers:
+            - Sum the absolute value of all international transfers (both incoming and outgoing) over 6 months
+            - Divide by 6 to get the monthly average
 
-        h. Cash Withdrawals/Deposits:
-           - Sum the absolute value of all cash withdrawals and deposits over 6 months
-           - Divide by 6 to get the monthly average
+         h. Cash Withdrawals/Deposits:
+            - Sum the absolute value of all cash withdrawals and deposits over 6 months
+            - Divide by 6 to get the monthly average
 
-   - General Formula:
-     - Monthly Average = (Sum of all relevant transactions over 6 months) / 6
-   - Notes:
-     - Ensure that the averages are consistent with the persona's financial profile and transaction patterns
-     - For business accounts, adjust the calculations to reflect business-specific patterns (e.g., higher transaction volumes, regular large payments)
-     - For categories with irregular expenses (like healthcare or international transfers), consider using a weighted average that accounts for months with unusually high or low activity
+      - General Formula:
+      - Monthly Average = (Sum of all relevant transactions over 6 months) / 6
+      - Notes:
+      - Ensure that the averages are consistent with the persona's financial profile and transaction patterns
+      - For business accounts, adjust the calculations to reflect business-specific patterns (e.g., higher transaction volumes, regular large payments)
+      - For categories with irregular expenses (like healthcare or international transfers), consider using a weighted average that accounts for months with unusually high or low activity
 
-12. Quality Assurance:
+9. Quality Assurance:
    - Ensure all data is realistic and consistent for the Dutch context
    - Verify that suspicious activities align with the given decisionOutcome and suspiciousPattern
    - Confirm that the scenario difficulty matches the provided difficultyLevel
@@ -359,7 +361,6 @@ More information about the output format. Belowe you will find the
 7. difficultyLevel: Difficulty level and score
    - level: The overall difficulty level of the scenario (string: "easy", "medium", or "hard")
    - score: Numeric score representing the specific difficulty within the level (number: 1-10)
-
 
 8. auxiliaryData: Auxiliary data (only included if showAuxiliaryData is true) 6-month category averages:
    - dailyExpenses: Monthly average of daily expenses in euros (number)
