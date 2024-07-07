@@ -725,6 +725,41 @@ Example of an error response:
 Ensure that the function checks all parameters and reports all errors, not just the first one encountered. This allows users to correct all issues at once.
 </important>
 
+## 14. Data Sanitization Guidelines
+
+To protect privacy and prevent the exposure of sensitive information, follow these guidelines when generating scenario data:
+
+1. Personal Names:
+   - Use a predefined list of common Dutch first names and surnames
+   - Avoid using real names of individuals, especially for suspicious activities
+   - Example: Instead of "John Doe", use "Jan de Vries"
+
+4. Account Numbers:
+   - Never use real account numbers
+   - Generate fictitious account numbers that follow the correct format for Dutch banks
+   - Example: For IBAN, use "NL99 BANK 0123 4567 89" where BANK is a placeholder for the bank's code
+
+5. Addresses:
+   - Use real street names but fictitious house numbers
+   - For suspicious activities, use generic addresses like "Hoofdstraat 123, Amsterdam"
+
+6. Phone Numbers:
+   - Generate fictitious phone numbers that follow Dutch number formats
+   - For mobile: +31 6 1234 5678
+   - For landline: +31 20 123 4567 (where 20 is the area code for Amsterdam)
+
+7. Email Addresses:
+   - Create fictitious email addresses using common providers
+   - Example: j.devries@emailprovider.nl
+
+8. Identification Numbers:
+   - Never use real identification numbers (e.g., BSN, passport numbers)
+   - Generate fictitious numbers that follow the correct format but would fail validation checks
+
+
+Consistency: Ensure that once a sanitized name or identifier is used for an entity, it is used consistently throughout the scenario.
+When using placeholder data, make sure it's clearly distinguishable as fictional to prevent any confusion with real entities.
+
 <important>
 Ensure all numerical data is formatted consistently (e.g., use of decimal points, thousands separators)
 </important>
