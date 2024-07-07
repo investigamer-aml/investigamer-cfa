@@ -18,6 +18,7 @@ Version: 1.1.0
 - Added Testing Guidelines with sample unit test
 - Expanded Regulatory Compliance section with specific Dutch and EU regulations
 - Added this Changelog
+- Added Glossary
 
 ### Version 1.0.0
 - Initial release of the KYC/TM Test Scenario Generator Prompt
@@ -984,6 +985,25 @@ Specific Regulatory Considerations:
   * Include cases with varying risk levels requiring different levels of scrutiny
 
 Regularly update the scenario generator to reflect the latest changes in KYC/AML regulations. Stay informed about updates from De Nederlandsche Bank, the Dutch Financial Intelligence Unit (FIU-Netherlands), and EU regulatory bodies.
+
+## 19. Glossary
+
+- AML: Anti-Money Laundering - Refers to the laws, regulations, and procedures intended to prevent criminals from disguising illegally obtained funds as legitimate income.
+- BSN: Burgerservicenummer - The Dutch citizen service number, a unique personal identification number.
+- DUO: Dienst Uitvoering Onderwijs - The Dutch organization responsible for student finance.
+- EU: European Union - An economic and political union of 27 European countries.
+- GDPR: General Data Protection Regulation - A regulation in EU law on data protection and privacy in the European Union and the European Economic Area.
+- IBAN: International Bank Account Number - A standard international numbering system for bank accounts.
+- KYC: Know Your Customer - The process of verifying the identity of clients and assessing their suitability, along with the potential risks of illegal intentions towards the business relationship.
+- PEP: Politically Exposed Person - An individual who has been entrusted with a prominent public function and presents a higher risk for potential involvement in bribery and corruption due to their position and influence.
+- Randstad: A megalopolis in the central-western Netherlands consisting of the four largest Dutch cities (Amsterdam, Rotterdam, The Hague and Utrecht) and their surrounding areas.
+- TM: Transaction Monitoring - The process of reviewing and analyzing customer transactions to identify potential suspicious activities.
+- UBO: Ultimate Beneficial Owner - The natural person(s) who ultimately owns or controls a customer and/or the natural person on whose behalf a transaction is being conducted.
+- VAT: Value Added Tax - A consumption tax placed on a product whenever value is added at each stage of the supply chain, from production to the point of sale.
+- Wwft: Wet ter voorkoming van witwassen en financieren van terrorisme - The Dutch Money Laundering and Terrorist Financing (Prevention) Act.
+
+This glossary covers key terms used in the prompt. For more comprehensive definitions or explanations of financial and regulatory concepts, refer to official sources such as De Nederlandsche Bank or the European Banking Authority.
+
 
 GenerateKYCTestScenario(
 "showAuxiliaryData": "true",
