@@ -449,3 +449,21 @@ def create_use_case():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "An error occurred", "details": str(e)}), 500
+
+
+
+@app.route("/api/use-cases/<int:use_case_id>", methods=["GET"])
+def get_use_case(use_case_id):
+    try:
+        use_case = UseCases.query.get_or_404(use_case_id)
+        return jsonify({
+            "id": use_case.id,
+            "description": use_case.description,
+            "type": use_case.type,
+            "difficulty_id": use_case.difficulty_id,
+            "risk_factors": use_case.risk_factors,
+            "lesson_id": use_case.lesson_id,
+            "created_by_user": use_case.created_by_user,
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
