@@ -109,7 +109,8 @@ def get_practice_data(practice_type=None):
     use_case_data = {
         "id": use_case.id,
         "lesson_id": use_case.lesson_id,
-        "lesson_title": current_lesson["title"],
+        # "lesson_title": current_lesson["title"],
+        "lesson_title": Lessons.query.get(use_case.lesson_id).title,  # Add this line
         "description": render_markdown(use_case.description),
         "questions": [
             {
@@ -414,6 +415,7 @@ def get_use_cases():
     ).all()  # temporary filter to ignore old use cases
     use_case_data = []
     for use_case in use_cases:
+        lesson = Lessons.query.get(use_case.lesson_id)
         use_case_data.append(
             {
                 "id": use_case.id,
@@ -422,6 +424,7 @@ def get_use_cases():
                 "difficulty_id": use_case.difficulty_id,
                 "risk_factors": use_case.risk_factors,
                 "lesson_id": use_case.lesson_id,
+                "lesson_title": lesson.title if lesson else None,
                 "created_by_user": use_case.created_by_user,
             }
         )
@@ -456,6 +459,7 @@ def create_use_case():
 def get_use_case(use_case_id):
     try:
         use_case = UseCases.query.get_or_404(use_case_id)
+        lesson = Lessons.query.get(use_case.lesson_id)
         return jsonify({
             "id": use_case.id,
             "description": use_case.description,
@@ -463,6 +467,7 @@ def get_use_case(use_case_id):
             "difficulty_id": use_case.difficulty_id,
             "risk_factors": use_case.risk_factors,
             "lesson_id": use_case.lesson_id,
+            "lesson_title": lesson.title if lesson else None,
             "created_by_user": use_case.created_by_user,
         })
     except Exception as e:
