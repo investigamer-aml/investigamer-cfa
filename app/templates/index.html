@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Investigamer{% endblock %}
+{% block title %}Mosaic{% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4">
@@ -8,7 +8,7 @@
         <div class="lg:flex-grow md:w-1/2 lg:pr-24 md:pr-16 flex flex-col md:items-start md:text-left mb-16 md:mb-0 items-center text-center">
             <h1 class="title-font sm:text-6xl text-5xl mb-4 font-medium text-white">Skilling up your <span class="text-purple-800">AML</span> knowledge has never been more <span class="text-purple-800">fun</span>!
             </h1>
-            <p class="mb-8 leading-relaxed text-gray-300">Welcome to Investigamer, the platform where learning Anti-Money Laundering (AML) is engaging and interactive. Get started today to enhance your AML skills through quizzes, real-life scenarios, and more!</p>
+            <p class="mb-8 leading-relaxed text-gray-300">Welcome to Mosaic, the platform where learning Anti-Money Laundering (AML) is engaging and interactive. Get started today to enhance your AML skills through quizzes, real-life scenarios, and more!</p>
             <div class="flex justify-center gap-4 mt-4">
                 {% if not current_user.is_authenticated %}
                     <a href="/login" class="inline-flex text-white bg-blue-500 border-0 py-2 px-6 focus:outline-none hover:bg-blue-600 rounded text-lg">Login</a>

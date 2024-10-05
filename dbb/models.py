@@ -1,4 +1,4 @@
-""" DB models for the investigamer app
+""" DB models for the Mosaic app
 """
 import json
 from datetime import datetime, timezone
