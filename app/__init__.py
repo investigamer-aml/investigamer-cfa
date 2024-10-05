@@ -16,7 +16,18 @@ def create_app(config_class="Config"):
     Creates and configures an instance of the Flask application.
     """
     app = Flask(__name__)
-    CORS(app)
+
+    CORS(
+        app,
+        supports_credentials=True,
+        resources={r"/api/*": {"origins": [
+            "http://localhost:5173",  # Local development
+            "http://localhost",       # Docker container
+            "http://3.74.161.61",     # Your EC2 instance IP
+            "https://3.74.161.61"     # In case you add HTTPS later
+        ]}},
+    )
+
     config_module = __import__("config", fromlist=[config_class])
     app.config.from_object(getattr(config_module, config_class))
 

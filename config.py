@@ -26,7 +26,7 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URI")
     DEBUG = False
-
+    print(f"Database URI: {SQLALCHEMY_DATABASE_URI}")  # Add this line for debugging
 
 class DevelopmentConfig(Config):
     SQLALCHEMY_ECHO = False

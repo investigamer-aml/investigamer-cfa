@@ -1,33 +1,45 @@
 """ Module to handle endpoints for use case related stuff
 """
 
-from flask import Blueprint
-from flask import current_app as app
-from flask import jsonify, request, session
-from flask_login import (current_user, login_required)
-
-from .utils import find_similar_use_case, get_first_question_of_use_case, get_next_use_case, prepare_first_question_data
-
+from flask import Blueprint, jsonify, request, current_app as app
+from flask_login import current_user, login_required
 from app import db
-from dbb.models import Options, Questions, UserAnswers
+from dbb.models import Options, Questions, UserAnswers, UseCases
+
+from .utils import (find_similar_use_case, get_first_question_of_use_case,
+                    get_lessons_use_case_count, get_next_use_case,
+                    get_users_correct_use_cases_per_lesson,
+                    prepare_first_question_data)
 
 use_case_bp = Blueprint("use_case", __name__)
 
-@use_case_bp.route("/submit-answer", methods=["POST"])
+
+@use_case_bp.route("/api/practice/submit", methods=["POST"])
 @login_required
 def submit_answer():
     """
     Process answers submitted by the user for a use case, evaluate correctness, and respond appropriately.
     """
+    app.logger.debug("Received submit request")
+    app.logger.debug("Request method: %s", request.method)
+    app.logger.debug("Request data: %s", request.json)
+
     data = request.get_json()
     app.logger.info(f"Received data: {data}")
 
-    use_case_id = data.get("use_case_id")
-    # lesson_id = 1  current_user.lesson_id
+    use_case_id = data.get("useCaseId")
+    lesson_id = data.get("lessonId")
     answers_data = data.get("answers")
 
-    if not use_case_id or not answers_data:
-        return jsonify({"error": "Missing use case ID or answers data"}), 400
+    app.logger.debug(f"use_case_id: {use_case_id}")
+    app.logger.debug(f"answers: {answers_data}")
+    app.logger.debug(f"lesson: {lesson_id}")
+
+    if not use_case_id or not answers_data or not lesson_id:
+        return (
+            jsonify({"error": "Missing use case ID, lesson ID, or answers data"}),
+            400,
+        )
 
     results = []
     has_mistake = False
@@ -60,7 +72,7 @@ def submit_answer():
             question_id=int(question_id),
             option_id=int(option_id),
             is_correct=is_correct,
-            lesson_id=current_user.lesson_id,
+            lesson_id=lesson_id,
         )
         db.session.add(attempt)
         results.append({"questionId": question_id, "isCorrect": is_correct})
@@ -70,32 +82,96 @@ def submit_answer():
 
     db.session.commit()
 
+    next_use_case = None
+    is_similar_use_case = False
+
     if has_mistake:
-        # Find a similar use case based on risk factors
         similar_use_case = find_similar_use_case(
-            use_case_id, current_user.id, current_user.lesson_id
+            use_case_id, current_user.id, lesson_id
         )
         if similar_use_case:
-            # Store the similar use case ID in the session or temporary storage
-            session["similar_use_case_id"] = similar_use_case.id
+            next_use_case = similar_use_case
+            is_similar_use_case = True
 
-    next_use_case = get_next_use_case(use_case_id)
+    if not next_use_case:
+        # If no mistake or no similar use case found, get the next sequential use case
+        next_use_case = get_next_use_case(use_case_id, current_user.id, lesson_id)
+
+    completed_use_cases = get_users_correct_use_cases_per_lesson(
+        lesson_id, current_user.id
+    )
+    total_use_cases = get_lessons_use_case_count(lesson_id)
+
+    response_data = {
+        "message": "Answer submitted successfully",
+        "results": results,
+        "completedUseCases": completed_use_cases,
+        "totalUseCases": total_use_cases,
+        "isComplete": next_use_case is None,
+    }
+
     if next_use_case:
+        app.logger.info(f"Next use case: {next_use_case.id}")
+        app.logger.debug(f"Next use case questions: {next_use_case.questions}")
         first_question = get_first_question_of_use_case(next_use_case.id)
-        next_use_case_data = {
+        response_data["nextUseCase"] = {
             "useCaseId": next_use_case.id,
             "description": next_use_case.description,
             "firstQuestion": prepare_first_question_data(first_question),
+            "lessonId": next_use_case.lesson_id,
         }
-        return (
-            jsonify(
-                {
-                    "message": "Answer submitted successfully",
-                    "isCorrect": is_correct,
-                    "nextUseCase": next_use_case_data,
-                }
-            ),
-            200,
-        )
+        response_data["isSimilarUseCase"] = is_similar_use_case
     else:
-        return jsonify({"message": "No more use cases"}), 200
+        app.logger.info("No next use case available")
+
+    return jsonify(response_data), 200
+
+
+@use_case_bp.route("/api/practice_v2/submit", methods=["POST"])
+@login_required
+def submit_answer_v2():
+    """
+    Process answers submitted by the user for a use case in practice v2,
+    evaluate correctness based on risk analyst decision, and respond appropriately.
+    """
+    app.logger.debug("Received submit request for practice v2")
+    app.logger.debug("Request method: %s", request.method)
+    app.logger.debug("Request data: %s", request.json)
+
+    data = request.get_json()
+    app.logger.info(f"Received data: {data}")
+
+    use_case_id = data.get("useCaseId")
+    lesson_id = data.get("lessonId")
+    answer = data.get("answer")
+
+    app.logger.debug(f"use_case_id: {use_case_id}")
+    app.logger.debug(f"answer: {answer}")
+    app.logger.debug(f"lesson: {lesson_id}")
+
+    if not use_case_id or not answer or not lesson_id:
+        return jsonify({"error": "Missing use case ID, lesson ID, or answer data"}), 400
+
+    use_case = UseCases.query.get(use_case_id)
+    if not use_case:
+        return jsonify({"error": "Use case not found"}), 404
+
+    # For simplicity, we'll consider 'escalate' as the correct answer
+    # In a real scenario, you'd have a more sophisticated way to determine correctness
+    is_correct = (answer == 'escalate')
+
+    user_answer = UserAnswers(
+        user_id=current_user.id,
+        use_case_id=int(use_case_id),
+        lesson_id=int(lesson_id),
+        is_correct=is_correct,
+    )
+    db.session.add(user_answer)
+    db.session.commit()
+
+    response_data = {
+        "message": "Answer submitted successfully",
+        "result": {"isCorrect": is_correct},
+    }
+
+    return jsonify(response_data), 200

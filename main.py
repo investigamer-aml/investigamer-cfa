@@ -20,4 +20,4 @@ config_class = config_map.get(env, "Config")
 app = create_app(config_class)
 
 if __name__ == "__main__":
-    app.run(debug=app.config.get("DEBUG", False))
+    app.run(host='0.0.0.0', port=5000, debug=app.config.get("DEBUG", False))

@@ -16,7 +16,7 @@ auth_bp = Blueprint("auth", __name__)
 
 
 ##### REGISTRATION #####
-@app.route("/register", methods=["POST"])
+@app.route("/api/register", methods=["POST"])
 def register():
     """
     Handle the user registration process. Collects data from form, validates,
@@ -55,7 +55,7 @@ def register():
     return jsonify({"message": "User created successfully"}), 201
 
 
-@app.route("/register", methods=["GET"])
+@app.route("/api/register", methods=["GET"])
 def show_register():
     """
     Display the registration page.
@@ -64,28 +64,28 @@ def show_register():
 
 
 ####### LOGIN #######
-@app.route("/login", methods=["POST"])
+@app.route("/api/login", methods=["POST"])
 def login():
     """
-    Authenticate the user. If authentication is successful, redirect to the homepage;
+    Authenticate the user. If authentication is successful, return a JSON response with user info;
     otherwise, return an error.
     """
     if current_user.is_authenticated:
-        return redirect(url_for("home"))  # Redirect to the homepage
+        return jsonify({"message": "Already logged in"}), 200
 
-    login_input = request.form.get(
-        "login_input"
-    )  # Assuming you change the form to have 'login_input' instead of 'username'
-    password = request.form.get("password")
+    data = request.get_json()
+    login_input = data.get("login_input")
+    password = data.get("password")
 
     # Attempt to authenticate first by username, then by email
-    user = Users.query.filter(
-        (Users.username == login_input) | (Users.email == login_input)
-    ).first()
+    user = Users.query.filter((Users.email == login_input)).first()
 
     if user and user.check_password(password):
         login_user(user)
-        return redirect(url_for("home"))  # Redirect to the homepage
+        return (
+            jsonify({"message": "Login successful", "user": {"email": user.email}}),
+            200,
+        )
     else:
         return jsonify({"error": "Invalid username or password"}), 401
 
@@ -125,3 +125,43 @@ def admin():
         use_cases = UseCases.query.filter_by(created_by_user=current_user.id).all()
 
     return render_template("admin.html", use_cases=use_cases)
+
+
+# @app.route("/api/admin/dashboard")
+# @login_required
+# def admin_dashboard():
+#     if not current_user.is_admin:
+#         return jsonify({"error": "Unauthorized"}), 403
+
+#     total_users = Users.query.count()
+
+#     avg_progression = db.session.query(func.avg(UserLessonInteraction.progress)).scalar() or 0
+
+#     avg_score = db.session.query(func.avg(UserLessonInteraction.score)).scalar() or 0
+
+#     total_lessons = Lessons.query.count()
+#     completed_lessons = UserLessonInteraction.query.filter_by(completed=True).count()
+#     lesson_completion = (completed_lessons / (total_lessons * total_users)) * 100 if total_users > 0 else 0
+
+#     role_distribution = db.session.query(
+#         Users.use_case_difficulty,
+#         func.count(Users.id).label('count'),
+#         func.avg(UserLessonInteraction.progress).label('progression')
+#     ).join(UserLessonInteraction, Users.id == UserLessonInteraction.user_id, isouter=True)\
+#      .group_by(Users.use_case_difficulty).all()
+
+#     role_data = [
+#         {
+#             "role": role,
+#             "count": count,
+#             "progression": float(progression or 0)
+#         } for role, count, progression in role_distribution
+#     ]
+
+#     return jsonify({
+#         "userCount": total_users,
+#         "avgProgression": float(avg_progression),
+#         "avgScore": float(avg_score),
+#         "lessonCompletion": float(lesson_completion),
+#         "roleDistribution": role_data
+#     })

@@ -1,18 +1,17 @@
-""" DB models for the investigamer app
+""" DB models for the Mosaic app
 """
 import json
 from datetime import datetime, timezone
-from enum import Enum
+from typing import List, Optional
 
 from flask_login import UserMixin
+from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, String
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.types import TEXT, TypeDecorator
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import db
-
-Base = declarative_base()
 
 
 class JSONEncodedDict(TypeDecorator):
@@ -32,39 +31,62 @@ class JSONEncodedDict(TypeDecorator):
 
 
 class DifficultyLevel(db.Model):
-    """
-    Represents the difficulty level of a use case, allowing for the categorization and appropriate assignment of use cases to users based on their skill level.
-    """
+    """Represents the difficulty level of a use case."""
 
-    id = db.Column(db.Integer, primary_key=True)
-    level = db.Column(db.String(50), unique=True, nullable=False)
+    __tablename__ = "difficulty_level"
 
-    def __repr__(self):
-        """Print itself"""
+    id: Mapped[int] = mapped_column(primary_key=True)
+    level: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+
+    def __repr__(self) -> str:
+        """
+        Returns a string representation of the DifficultyLevel instance, including its level.
+
+        Returns:
+            str: A string representation of the DifficultyLevel instance.
+        """
         return f"<DifficultyLevel {self.level}>"
 
 
 class Users(UserMixin, db.Model):
-    """
-    Represents a User in the system, capable of logging in and interacting with the application.
-    Stores information such as username, email, password hash, and administrative status.
-    """
+    """Represents a User in the system."""
 
-    id = db.Column(db.Integer, primary_key=True)
-    first_name = db.Column(db.String(80), unique=True, nullable=False)
-    last_name = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    hashed_password = db.Column(db.String(128), nullable=False)
-    use_case_difficulty = db.Column(db.String(128), nullable=False)
-    lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
-    score = db.Column(db.Float, nullable=False)
-    is_admin = db.Column(db.Boolean, default=False, nullable=False)  # Add this line
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at = db.Column(
-        db.DateTime,
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    first_name: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+    last_name: Mapped[str] = mapped_column(String(80), unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String(255), nullable=False)
+    use_case_difficulty: Mapped[str] = mapped_column(String(128), nullable=True)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id"), nullable=True)
+    score: Mapped[float] = mapped_column(Float, nullable=True)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime,
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc),
     )
+
+    lesson: Mapped["Lessons"] = relationship(back_populates="users")
+    user_answers: Mapped[List["UserAnswers"]] = relationship(back_populates="user")
+    lesson_interactions: Mapped[List["UserLessonInteraction"]] = relationship(
+        back_populates="user"
+    )
+
+    def get_id(self):
+        """
+        Get the unique identifier for the current user.
+
+        This method overrides the default get_id method provided by UserMixin to return the user's ID as a string.
+
+        Returns:
+            str: The unique identifier of the user as a string.
+        """
+        return str(self.id)
 
     def set_password(self, password):
         """
@@ -89,126 +111,137 @@ class Users(UserMixin, db.Model):
 
 
 class Lessons(db.Model):
-    """
-    Represents an educational lesson which may contain multiple use cases. Lessons provide structured learning paths.
-    """
+    """Represents an educational lesson."""
 
     __tablename__ = "lessons"
 
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+
+    users: Mapped[List["Users"]] = relationship(back_populates="lesson")
+    use_cases: Mapped[List["UseCases"]] = relationship(back_populates="lesson")
+    user_interactions: Mapped[List["UserLessonInteraction"]] = relationship(
+        back_populates="lesson"
+    )
 
 
 class UseCases(db.Model):
-    """
-    Represents a use case within the system which encompasses a scenario that a user can practice or be tested on.
-    Includes relationships to questions and other related data.
-    """
+    """Represents a use case within the system."""
 
-    id = db.Column(db.Integer, primary_key=True)
-    description = db.Column(db.String, nullable=False)
-    type = db.Column(db.String, nullable=False)
-    difficulty_id = db.Column(
-        db.Integer, db.ForeignKey("difficulty_level.id"), nullable=False
+    __tablename__ = "use_cases"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    description: Mapped[str] = mapped_column(String, nullable=False)
+    type: Mapped[str] = mapped_column(String, nullable=False)
+    difficulty_id: Mapped[int] = mapped_column(
+        ForeignKey("difficulty_level.id"), nullable=False
     )
-    # multiple_risks = db.Column(db.Boolean, nullable=False)
-    # final_decision = db.Column(db.String, nullable=False)
-    risk_factors = db.Column(JSONEncodedDict)
-    lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
-    questions = db.relationship("Questions", backref="use_case", lazy=True)
-    created_by_user = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    # news_article_id = db.Column(db.Integer, db.ForeignKey("news_articles.id"), nullable=False)
-    news_articles = db.relationship("NewsArticle", back_populates="use_case")
+    risk_factors: Mapped[Optional[dict]] = mapped_column(JSON)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id"), nullable=False)
+    created_by_user: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
 
-    def __repr__(self):
-        """Provide a string representation of the use case."""
-        return "<UseCase %r>" % self.description
+    lesson: Mapped["Lessons"] = relationship(back_populates="use_cases")
+    questions: Mapped[List["Questions"]] = relationship(back_populates="use_case")
+    news_articles: Mapped[List["NewsArticle"]] = relationship(back_populates="use_case")
+    use_case_answers: Mapped[List["UserAnswers"]] = relationship(
+        back_populates="use_case"
+    )
+
+    def __repr__(self) -> str:
+        """
+        Returns a string representation of the UseCase instance, including its description.
+
+        Returns:
+            str: A string representation of the UseCase instance.
+        """
+        return f"<UseCase {self.description}>"
 
 
 class UserAnswers(db.Model):
-    """
-    Stores responses from users to specific questions in specific use cases, recording whether the answers were correct.
-    """
+    """Stores responses from users to specific questions in specific use cases."""
 
     __tablename__ = "user_answers"
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    use_case_id = db.Column(db.Integer, db.ForeignKey("use_cases.id"), nullable=False)
-    question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), nullable=False)
-    option_id = db.Column(db.Integer, db.ForeignKey("options.id"), nullable=False)
-    lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
-    is_correct = db.Column(db.Boolean, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    use_case_id: Mapped[int] = mapped_column(ForeignKey("use_cases.id"), nullable=False)
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"), nullable=False)
+    option_id: Mapped[int] = mapped_column(ForeignKey("options.id"), nullable=False)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id"), nullable=False)
+    is_correct: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=datetime.utcnow, nullable=False
+    )
 
-    user = db.relationship("Users", backref=db.backref("user_answers", lazy=True))
-    use_case = db.relationship(
-        "UseCases", backref=db.backref("use_case_answers", lazy=True)
-    )
-    question = db.relationship(
-        "Questions", backref=db.backref("question_answers", lazy=True)
-    )
-    option = db.relationship("Options", backref=db.backref("option_answers", lazy=True))
+    user: Mapped["Users"] = relationship(back_populates="user_answers")
+    use_case: Mapped["UseCases"] = relationship(back_populates="use_case_answers")
+    question: Mapped["Questions"] = relationship(back_populates="question_answers")
+    option: Mapped["Options"] = relationship(back_populates="option_answers")
 
 
 class Questions(db.Model):
-    """
-    Represents a question associated with a use case. Questions are linked to use cases and have multiple possible answers.
-    """
+    """Represents a question associated with a use case."""
 
-    id = db.Column(db.Integer, primary_key=True)
-    use_case_id = db.Column(db.Integer, db.ForeignKey("use_cases.id"), nullable=False)
-    text = db.Column(db.String, nullable=False)
-    options = db.relationship("Options", backref="questions", lazy=True)
+    __tablename__ = "questions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    use_case_id: Mapped[int] = mapped_column(ForeignKey("use_cases.id"), nullable=False)
+    text: Mapped[str] = mapped_column(String, nullable=False)
+
+    use_case: Mapped["UseCases"] = relationship(back_populates="questions")
+    options: Mapped[List["Options"]] = relationship(back_populates="question")
+    question_answers: Mapped[List["UserAnswers"]] = relationship(
+        back_populates="question"
+    )
 
 
 class Options(db.Model):
-    """
-    Represents an answer option for a particular question. Each option knows whether it is the correct answer for its question.
-    """
+    """Represents an answer option for a particular question."""
 
     __tablename__ = "options"
-    id = db.Column(db.Integer, primary_key=True)
-    question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), nullable=False)
-    text = db.Column(db.String, nullable=False)
-    is_correct = db.Column(db.Boolean, default=False, nullable=False)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"), nullable=False)
+    text: Mapped[str] = mapped_column(String, nullable=False)
+    is_correct: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    question: Mapped["Questions"] = relationship(back_populates="options")
+    option_answers: Mapped[List["UserAnswers"]] = relationship(back_populates="option")
 
 
 class UserLessonInteraction(db.Model):
-    """
-    Represents an interaction between a user and a lesson, tracking the progress and completions.
-    """
+    """Represents an interaction between a user and a lesson."""
 
     __tablename__ = "user_lesson_interactions"
 
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    lesson_id = db.Column(db.Integer, db.ForeignKey("lessons.id"), nullable=False)
-    completed = db.Column(db.Boolean, default=False, nullable=False)
-    completion_date = db.Column(db.DateTime)
-    score = db.Column(db.Float)  # Optional, if you track scoring
-    last_accessed = db.Column(db.DateTime, default=datetime.utcnow)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("lessons.id"), nullable=False)
+    completed: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    completion_date: Mapped[Optional[datetime]] = mapped_column(DateTime)
+    score: Mapped[Optional[float]] = mapped_column(Float)
+    last_accessed: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    user = db.relationship(
-        "Users", backref=db.backref("lesson_interactions", lazy="dynamic")
-    )
-    lesson = db.relationship(
-        "Lessons", backref=db.backref("user_interactions", lazy="dynamic")
-    )
+    user: Mapped["Users"] = relationship(back_populates="lesson_interactions")
+    lesson: Mapped["Lessons"] = relationship(back_populates="user_interactions")
 
-    def __repr__(self):
-        """Provide a string representation of the interaction."""
+    def __repr__(self) -> str:
+        """
+        Returns a string representation of the UserLessonInteraction instance, including its user_id, lesson_id, and completion status.
+
+        Returns:
+            str: A string representation of the UserLessonInteraction instance.
+        """
         return f"<UserLessonInteraction(user_id={self.user_id}, lesson_id={self.lesson_id}, completed={self.completed})>"
 
 
 class NewsArticle(db.Model):
-    """
-    Represents a news article generated from a use case scenario.
-    """
+    """Represents a news article generated from a use case scenario."""
 
     __tablename__ = "news_articles"
 
-    id = db.Column(db.Integer, primary_key=True)
-    content = db.Column(db.String, nullable=False)
-    use_case_id = db.Column(db.Integer, db.ForeignKey("use_cases.id"), nullable=False)
-    use_case = db.relationship("UseCases", back_populates="news_articles")
+    id: Mapped[int] = mapped_column(primary_key=True)
+    content: Mapped[str] = mapped_column(String, nullable=False)
+    use_case_id: Mapped[int] = mapped_column(ForeignKey("use_cases.id"), nullable=False)
+
+    use_case: Mapped["UseCases"] = relationship(back_populates="news_articles")

@@ -1,6 +1,8 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-investigamer-cfa/
+investigamer/*
+investigamer-cfa/*
+investigamer-cfa/bin/*
 __pycache__//
 
 # dependencies
@@ -13,6 +15,7 @@ __pycache__//
 
 # production
 /build
+/dist
 
 # misc
 .DS_Store

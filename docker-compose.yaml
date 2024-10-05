@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  frontend:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ../ig-react/dist:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=DevelopmentConfig
+      - DATABASE_URI=postgresql://data_admin:investigamer@db:5432/ig_data_admin
+      - SECRET_KEY=d21d79ac7f6da6b7c3992ea3d577bc973dfa39c0f8ba63c5
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres:15.6
+    environment:
+      - POSTGRES_USER=data_admin
+      - POSTGRES_PASSWORD=investigamer
+      - POSTGRES_DB=ig_data_admin
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U data_admin -d ig_data_admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  default:
+    driver: bridge

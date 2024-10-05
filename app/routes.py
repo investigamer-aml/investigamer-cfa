@@ -4,21 +4,20 @@ from typing import Any, Dict, Optional
 
 from flask import current_app as app
 from flask import jsonify, redirect, render_template, request, session, url_for
-from flask_login import LoginManager, current_user, login_required
+from flask_login import current_user, login_required
 from markupsafe import Markup
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import func, or_, select
 
-from app import db
+from app import db, login_manager
 from dbb.models import (DifficultyLevel, Lessons, NewsArticle, Options,
                         Questions, UseCases, UserAnswers,
                         UserLessonInteraction, Users)
 
 from .use_case import *
-from .utils import get_next_lesson, render_markdown
+from .utils import (get_lessons_use_case_count, get_next_lesson,
+                    get_users_correct_use_cases_per_lesson, render_markdown)
 from .views import *
-
-login_manager = LoginManager()
-login_manager.init_app(app)
 
 
 @login_manager.user_loader
@@ -26,7 +25,7 @@ def load_user(user_id):
     """
     Load the user object from the user ID stored in the session.
     """
-    return Users.query.get(int(user_id))
+    return db.session.get(Users, int(user_id))
 
 
 @app.route("/profile")
@@ -64,26 +63,20 @@ def choose_practice():
 
 
 # Define your models based on the provided schema
-# @app.route("/practice/<int:lesson_id>")
-@app.route("/practice")
-@app.route("/practice/<string:practice_type>")
-def start_lesson(practice_type=None):
-    """Start the lesson with the right use case to a user"""
-    if practice_type not in ["KYC", "TM"]:
-        return redirect(url_for("choose_practice"))
-
+@app.route("/api/practice")
+@app.route("/api/practice/<string:practice_type>")
+@login_required
+def get_practice_data(practice_type=None):
+    """API endpoint to get practice data for a user"""
     user_id = current_user.id
     app.logger.info(f"Current User: {user_id}")
 
-    # Check if there is a similar use case ID stored in the session
     similar_use_case_id = session.get("similar_use_case_id")
 
     if similar_use_case_id:
         app.logger.info(f"There is a similar use case: {similar_use_case_id}")
-        # Retrieve the similar use case from the database
         use_case = UseCases.query.get(similar_use_case_id)
         if use_case:
-            # Remove the similar use case ID from the session
             session.pop("similar_use_case_id", None)
             is_similar_use_case = True
     else:
@@ -94,7 +87,7 @@ def start_lesson(practice_type=None):
             app.logger.info(f"get_current_use_case yielded: {current_use_case}")
 
             total_use_cases = get_lessons_use_case_count(current_lesson["id"])
-            correct_use_cases = get_users_correct_use_cases_per_lesson(
+            completed_use_cases = get_users_correct_use_cases_per_lesson(
                 current_lesson["id"], user_id
             )
 
@@ -102,36 +95,29 @@ def start_lesson(practice_type=None):
                 use_case = current_use_case
                 is_similar_use_case = False
             else:
-                # Move on to the next lesson
                 next_lesson = get_next_lesson(user_id)
                 if next_lesson:
-                    update_lesson_progress(
-                        user_id, next_lesson["id"], 0
-                    )  # Starting new lesson
-                    use_case = next_lesson["use_cases"][
-                        0
-                    ]  # Retrieve the first use case of the next lesson
+                    update_lesson_progress(user_id, next_lesson["id"], 0)
+                    use_case = next_lesson["use_cases"][0]
                     is_similar_use_case = False
                     app.logger.info(f"Use Case is: {use_case}")
                 else:
-                    # No more lessons or use cases
-                    return "Congratulations! You have completed all the lessons."
+                    return jsonify({"message": "All lessons completed"}), 200
         else:
-            # No more lessons or use cases
-            return "Congratulations! You have completed all the lessons."
+            return jsonify({"message": "All lessons completed"}), 200
 
-    # Prepare the use case data for the template
     use_case_data = {
         "id": use_case.id,
         "lesson_id": use_case.lesson_id,
-        "lesson_title": current_lesson["title"],
-        "description": use_case.description,
+        # "lesson_title": current_lesson["title"],
+        "lesson_title": Lessons.query.get(use_case.lesson_id).title,  # Add this line
+        "description": render_markdown(use_case.description),
         "questions": [
             {
-                "id": question.id,
+                "id": str(question.id),
                 "text": question.text,
                 "options": [
-                    {"id": option.id, "text": option.text}
+                    {"id": str(option.id), "text": option.text}
                     for option in question.options
                 ],
             }
@@ -139,33 +125,15 @@ def start_lesson(practice_type=None):
         ],
     }
 
-    html_description = render_markdown(use_case.description)
-    use_case_data["description"] = Markup(html_description)
+    app.logger.info(f"Sending use case data: {use_case_data}")
 
-    return render_template(
-        "practice.html",
-        use_case=use_case_data,
-        is_similar_use_case=is_similar_use_case,
-        total_use_cases=total_use_cases,
-        correct_use_cases=correct_use_cases,
-    )
-
-
-def get_lessons_use_case_count(lesson_id):
-    """Get the total number of cases in a lesson"""
-    return db.session.query(UseCases).filter(UseCases.lesson_id == lesson_id).count()
-
-
-def get_users_correct_use_cases_per_lesson(lesson_id, user_id):
-    """Check how many correct use cases a user has submitted within a lesson"""
-    return (
-        db.session.query(UserAnswers)
-        .filter(
-            UserAnswers.lesson_id == lesson_id,
-            UserAnswers.user_id == user_id,
-            UserAnswers.is_correct,
-        )
-        .count()
+    return jsonify(
+        {
+            "useCase": use_case_data,
+            "isSimilarUseCase": is_similar_use_case,
+            "totalUseCases": total_use_cases,
+            "completedUseCases": completed_use_cases,
+        }
     )
 
 
@@ -315,27 +283,25 @@ def get_current_use_case(user_id, lesson_id):
     Returns:
         UseCases | None: The first uncompleted use case or None if all are completed.
     """
-    # Get the IDs of use cases the user has completed in this lesson
-    completed_use_cases = (
-        db.session.query(UserAnswers.use_case_id)
-        .filter(
-            UserAnswers.user_id == user_id,
-            UserAnswers.lesson_id == lesson_id,
-            UserAnswers.is_correct,
-        )
-        .distinct()
-        .subquery()
+    # Get all use cases for the lesson
+    lesson_use_cases = (
+        UseCases.query.filter_by(lesson_id=lesson_id).order_by(UseCases.id).all()
     )
 
-    # Find the first uncompleted use case in the current lesson
-    current_use_case = (
-        UseCases.query.filter_by(lesson_id=lesson_id)
-        .filter(~UseCases.id.in_(select(completed_use_cases)))
-        .order_by(UseCases.id)
-        .first()
-    )
+    # Get the user's answers for this lesson
+    user_answers = UserAnswers.query.filter_by(
+        user_id=user_id, lesson_id=lesson_id
+    ).all()
 
-    return current_use_case
+    # Create a dict of use case IDs to their correct answer status
+    use_case_status = {ua.use_case_id: ua.is_correct for ua in user_answers}
+
+    # Find the first use case that hasn't been attempted or hasn't been answered correctly
+    for use_case in lesson_use_cases:
+        if use_case.id not in use_case_status or not use_case_status[use_case.id]:
+            return use_case
+
+    return None  # All use cases have been completed correctly
 
 
 def get_current_lesson(user_id):
@@ -439,3 +405,71 @@ def update_lesson_progress(user_id, lesson_id, progress, score=None):
     db.session.commit()
 
     return interaction
+
+
+# LLMs training internal tool
+@app.route("/api/use-cases", methods=["GET"])
+def get_use_cases():
+    use_cases = UseCases.query.filter_by(
+        lesson_id=3
+    ).all()  # temporary filter to ignore old use cases
+    use_case_data = []
+    for use_case in use_cases:
+        lesson = Lessons.query.get(use_case.lesson_id)
+        use_case_data.append(
+            {
+                "id": use_case.id,
+                "description": use_case.description,
+                "type": use_case.type,
+                "difficulty_id": use_case.difficulty_id,
+                "risk_factors": use_case.risk_factors,
+                "lesson_id": use_case.lesson_id,
+                "lesson_title": lesson.title if lesson else None,
+                "created_by_user": use_case.created_by_user,
+            }
+        )
+    return jsonify(use_case_data)
+
+
+@app.route("/api/use-cases", methods=["POST"])
+def create_use_case():
+    try:
+        data = request.get_json()
+        new_use_case = UseCases(
+            description=data["description"],
+            type=data["type"],
+            difficulty_id=data["difficulty_id"],
+            risk_factors=data["risk_factors"],
+            lesson_id=data["lesson_id"],
+            created_by_user=current_user.id,
+        )
+        db.session.add(new_use_case)
+        db.session.commit()
+        return jsonify({"message": "Use case created successfully"}), 201
+    except IntegrityError as e:
+        db.session.rollback()
+        return jsonify({"error": "Integrity error", "details": str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "An error occurred", "details": str(e)}), 500
+
+
+@app.route("/api/use-cases/<int:use_case_id>", methods=["GET"])
+def get_use_case(use_case_id):
+    try:
+        use_case = UseCases.query.get_or_404(use_case_id)
+        lesson = Lessons.query.get(use_case.lesson_id)
+        return jsonify(
+            {
+                "id": use_case.id,
+                "description": use_case.description,
+                "type": use_case.type,
+                "difficulty_id": use_case.difficulty_id,
+                "risk_factors": use_case.risk_factors,
+                "lesson_id": use_case.lesson_id,
+                "lesson_title": lesson.title if lesson else None,
+                "created_by_user": use_case.created_by_user,
+            }
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
